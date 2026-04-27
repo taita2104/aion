@@ -8,6 +8,33 @@ Breaking changes are marked **BREAKING**.
 
 ---
 
+## [3.1] 20260427 — Additive improvements, no breaking changes
+
+File headers remain `v=3`. All v3 constructs are valid in v3.1.
+v3.1 consumers MUST also accept all v3 syntax.
+
+### `neg` flag shorthand
+`neg` as a standalone flag is now equivalent to `neg=1`.
+Producers should prefer `neg`. Consumers must accept both forms.
+
+### Inline quantities
+Quantities may appear inline anywhere a `Q[id]` reference is valid.
+Format: `VALUEUNIT` with no space (`20000EUR`, `5000EUR*d`, `2pct*mo`).
+Declared `Q[id]` records remain preferred when a value is referenced more than once.
+
+### TMPL positional syntax
+TMPL instances may use positional values in declaration order instead of `field=val` pairs.
+TMPL field declarations may include unit annotations: `fields=[name:unit, ...]`.
+Mixed named/positional syntax within the same TMPL is forbidden.
+Consumers determine mode from the first instance row.
+
+### Extended standard properties
+Ten short-name standard properties added to reduce inter-producer inconsistency:
+`jur=` `ven=` `pen=` `cnd=` `mth=` `fmt=` `via=` `ref=` `dur=` `qty=`
+Freestyle synonyms (e.g. `jurisdiction=`, `penalty=`, `trigger=`) are now discouraged.
+
+---
+
 ## [3] 20260427
 
 ### Breaking changes

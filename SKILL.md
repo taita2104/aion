@@ -13,13 +13,16 @@ description: >
   "generate aion", "create aion file", "aion digest", ".aion".
 ---
 
-# AION v3 — AI Interop Object Notation
+# AION v3.1 — AI Interop Object Notation
 
 Token-efficient artificial language for AI-to-AI information exchange.
 No natural language. Every construct has exactly one interpretation.
 Universal: seven primitives cover any document type.
 
 **Core principle**: producer and consumer both load this skill. The skill is the contract.
+
+> v3.1 is fully backward compatible with v3. File headers continue to declare `v=3`.
+> v3.1 adds: `neg` flag shorthand, inline quantities, TMPL positional syntax, extended standard properties.
 
 ---
 
@@ -211,15 +214,21 @@ Parentheses `()` group sub-expressions. Maximum one level of nesting.
 
 ## Negation
 
-Any record can be negated with the `neg=1` property. It means:
-"the source document explicitly states this as false, excluded, or inapplicable."
+Any record can be negated to assert that the source document explicitly states
+its content as false, excluded, or inapplicable.
+
+Two equivalent forms — prefer the flag shorthand:
 
 ```
-F[f1] t=claim neg=1 n=warranty-excluded
-C[c1] neg=1 n=force-majeure-does-not-apply
+F[f1] t=claim neg n=warranty-excluded          # preferred (v3.1)
+C[c1] neg n=force-majeure-does-not-apply
+
+F[f1] t=claim neg=1 n=warranty-excluded        # also valid (v3 compat)
 ```
 
-Without `neg=1`, a record asserts its content as true. With `neg=1`, it asserts the contrary.
+Without negation, a record asserts its content as true.
+With negation, it asserts the contrary.
+Consumers MUST accept both `neg` and `neg=1`.
 
 ---
 
@@ -242,9 +251,24 @@ Relative dates are computed from the document date in the header.
 
 ## Quantities (`Q`)
 
+Declared form — use when the quantity is referenced more than once or its id is semantically meaningful:
+
 ```
 Q[id] =VALUE UNIT *FREQ
 ```
+
+Inline form — use when the quantity appears only once. No declaration needed:
+
+```
+K[k1] E[acme]>20000EUR E[beta] @<20260515 !
+C[pay] penalty=2pct *mo
+inv-line[l1] E[svc-1] 40h EUR150 EUR6000
+```
+
+Format: `VALUEUNIT` with no space. Frequency modifier appended directly: `10000EUR*mo`, `5000EUR*d`.
+
+Producers SHOULD use declared `Q` records when the same value is referenced in two or more records.
+Producers SHOULD use inline quantities in TMPL instances and single-use values.
 
 | Category | Units |
 |----------|-------|
@@ -300,11 +324,31 @@ Q[id] =VALUE UNIT *FREQ
 | `dt=` | date YYYYMMDD |
 | `by=` | responsible entity id |
 | `tags=` | labels list |
-| `neg=` | `1` = this record asserts the negative |
+| `neg` | negated assertion (also `neg=1`, both accepted) |
 
 `cf=` on a record is independent from `cf=` in the file header.
 Header `cf=` = confidence in the digest as a whole.
 Record `cf=` = confidence in that specific record's encoding.
+
+---
+
+## Extended standard properties
+
+Domain-specific properties used frequently enough to warrant standardized short names.
+Using these ensures inter-producer consistency. Freestyle synonyms (`jurisdiction=`, `penalty=` etc.) are discouraged.
+
+| Prop | Meaning | Example |
+|------|---------|---------|
+| `jur=` | applicable law / jurisdiction | `jur=it-civil` |
+| `ven=` | venue / competent forum | `ven=trib-mi` |
+| `pen=` | penalty or sanction | `pen=5000EUR*d` |
+| `cnd=` | trigger condition | `cnd=delay` |
+| `mth=` | method or procedure | `mth=rct` |
+| `fmt=` | format or media type | `fmt=pdf` |
+| `via=` | transmission channel | `via=email` |
+| `ref=` | external reference code | `ref=ISO-9001` |
+| `dur=` | duration | `dur=12mo` |
+| `qty=` | quantity (inline, no unit) | `qty=3` |
 
 ---
 
@@ -363,25 +407,34 @@ K[step-2] ->K[step-1]   # step-2 follows step-1
 
 For repeated structures (tables, line items, test cases, observations).
 
-Declare the template once, then instantiate:
+Declare once, then instantiate. Two syntaxes — prefer positional for dense tables:
 
+**Named syntax** (order-independent, v3 compat):
 ```
-TMPL[id] fields=[f1,f2,f3,f4]
-id[row-id] f1=val f2=val f3=val f4=val
-```
-
-Instances use the template name as the type. Fields are named (order-independent).
-Field values may reference AION records (`E[id]`, `Q[id]`) or be literals.
-
-```
-TMPL[inv-line] fields=[item,qty,rate,total]
-inv-line[l1] item=E[svc-1] qty=40h rate=EUR150 total=EUR6000
-inv-line[l2] item=E[svc-2] qty=8h rate=EUR250 total=EUR2000
-inv-line[l3] item=E[svc-3] qty=12h rate=EUR200 total=EUR2400
+TMPL[inv-line] fields=[item,h,rate,total]
+inv-line[l1] item=E[svc-1] h=40h rate=EUR150 total=EUR6000
+inv-line[l2] item=E[svc-2] h=8h  rate=EUR250 total=EUR2000
 ```
 
-A consumer that does not recognize a template instance type should check declared `TMPL`
-records before emitting `X`. If the type matches a `TMPL[id]`, parse as template instance.
+**Positional syntax** (compact, v3.1 preferred for tables):
+```
+TMPL[inv-line] fields=[item,h,rate,total]
+inv-line[l1] E[svc-1] 40h EUR150 EUR6000
+inv-line[l2] E[svc-2] 8h  EUR250 EUR2000
+inv-line[l3] E[svc-3] 12h EUR200 EUR2400
+```
+
+Positional instances follow the field order declared in `fields=`.
+Mixed syntax (some rows named, some positional) within the same TMPL is not permitted.
+
+TMPL fields may declare their expected unit with `:UNIT` notation:
+```
+TMPL[obs] fields=[subject,value:pct,period:mo,cf:0-1]
+obs[o1] E[grp-int] 32 6 0.96
+obs[o2] E[grp-sr]  41 6 0.88
+```
+
+A consumer encountering an unknown 2-letter type MUST check `TMPL` declarations before emitting `X`.
 
 ---
 
@@ -472,6 +525,10 @@ X src=RECORD field=FIELD reason=REASON got=VAL expected=EXPECTED
 7. Emit `X` for anomalies detected before sending
 8. Add `cf=` to records whose content is probabilistic or inferred
 9. Use `->` for sequence, `>>` for logical dependency — never interchange them
+10. Prefer `neg` flag over `neg=1`
+11. Use inline quantities for single-use values; use `Q[id]` records for values referenced more than once
+12. Use positional TMPL syntax for dense tables; use named syntax when field clarity matters
+13. Use extended standard properties (`jur=` `ven=` `pen=` `cnd=` `mth=`) instead of freestyle synonyms
 
 ## Consumer rules (MUST)
 
@@ -484,6 +541,9 @@ X src=RECORD field=FIELD reason=REASON got=VAL expected=EXPECTED
 7. `RAW` block: treat all lines until `>>>` as opaque verbatim string
 8. Propagate `fr=` when forwarding records downstream
 9. Version mismatch: emit `X field=v reason=unsupported`, halt
+10. Accept both `neg` and `neg=1` as equivalent negation markers
+11. Accept both named and positional TMPL instance syntax; determine mode from first instance row
+12. Accept both inline quantities (`20000EUR`) and `Q[id]` references
 
 ---
 
@@ -503,9 +563,6 @@ E[manual] t=file n=user-manual
 ---
 Q[total] =120000 EUR
 Q[rate] =10000 EUR *mo
-Q[deposit] =20000 EUR
-Q[penalty-del] =5000 EUR *d
-Q[penalty-pay] =2 pct *d
 
 S[obligations]
 C[c1] E[beta]>E[mvp] @<20261001 ! +[E[doc-t],E[test],E[manual]]
@@ -513,17 +570,17 @@ C[c1] E[beta]>E[mvp] @<20261001 ! +[E[doc-t],E[test],E[manual]]
 (E[acme]~ack @<+15dw) | (timeout => E[mvp].s=4)
 >>>
 C[c2] E[acme]>Q[rate] E[beta] @<*mo.01 @>20260601 !
-C[c3] law=it-civil forum=trib-mi
-C[c4] t=warranty neg=1 n=implied-warranties-excluded
+C[c3] jur=it-civil ven=trib-mi
+C[c4] t=warranty neg n=implied-warranties-excluded
 
 S[risk]
-C[r1] C[c1] trigger=delay => Q[penalty-del] E[beta]>E[acme]
-C[r2] C[c2] trigger=delay => Q[penalty-pay] E[acme]>E[beta]
+C[r1] C[c1] cnd=delay pen=5000EUR*d E[beta]>E[acme]
+C[r2] C[c2] cnd=delay pen=2pct*d E[acme]>E[beta]
 
 S[actions]
 K[k1] by=acme t=sign @<20260501 !
 K[k2] by=beta t=sign @<20260501 !
-K[k3] by=acme E[acme]>Q[deposit] E[beta] @<20260515 ! >>K[k1]
+K[k3] by=acme E[acme]>20000EUR E[beta] @<20260515 ! >>K[k1]
 ```
 
 ---
@@ -657,17 +714,18 @@ AION v=3 dt=20260430 type=invoice lang=it src=INV-2026-042.pdf
 
 E[beta] t=org role=supplier vat=IT12345678901
 E[acme] t=org role=client vat=IT98765432100
+E[svc-1] t=concept n=sviluppo-modulo-A
+E[svc-2] t=concept n=consulenza-architetturale
 ---
-TMPL[line] fields=[item,h,rate,total]
-line[l1] item=E[svc-1] h=40 rate=EUR150 total=EUR6000
-line[l2] item=E[svc-2] h=8 rate=EUR250 total=EUR2000
+TMPL[line] fields=[item,h:h,rate:EUR,total:EUR]
+line[l1] E[svc-1] 40 150 6000
+line[l2] E[svc-2] 8  250 2000
 
 Q[subtotal] =8000 EUR
-Q[vat] =22 pct
-Q[vat-amt] =1760 EUR
-Q[total] =9760 EUR
+Q[vat-amt]  =1760 EUR
+Q[total]    =9760 EUR
 
-C[pay] E[acme]>Q[total] E[beta] @<+30dw ! method=bank-transfer
-C[late] trigger=timeout => penalty=2pct *mo E[acme]>E[beta]
+C[pay] E[acme]>Q[total] E[beta] @<+30dw ! via=bank-transfer
+C[late] cnd=timeout pen=2pct*mo E[acme]>E[beta]
 K[k1] by=acme t=pay Q[total] @<20260530 !
 ```

@@ -1,8 +1,11 @@
-# AION v3 — Formal Specification
+# AION v3 — Formal Specification (rev. 3.1)
 
 This document is the authoritative reference for AION v3.
 `SKILL.md` in the repository root is the deployable subset optimized for AI system prompts.
 When the two conflict, this document takes precedence.
+
+> **Revision 3.1** is fully backward compatible with v3. File headers continue to declare `v=3`.
+> Consumers conforming to v3.1 MUST also accept all valid v3 constructs.
 
 ---
 
@@ -40,8 +43,75 @@ The unit of exchange is the `.aion` file: a plain-text semantic digest of a sour
 - `neg=1` property added
 - `TMPL[id]` template record type added
 - `cf=` semantics clarified: header = digest-level, record = record-level
-- Section membership rule clarified: explicit `+[...]` is authoritative; positional is fallback; mixing is forbidden
+- Section membership rule clarified
 - `s=0` and `p=2` changed from SHOULD omit to MUST omit
+
+---
+
+## 3.1 Changes in revision 3.1 (additive only)
+
+All changes in this revision are backward compatible. File headers remain `v=3`.
+v3.1 consumers MUST accept all v3 syntax in addition to the new forms below.
+
+### 3.1.1 `neg` flag shorthand
+
+`neg` as a standalone property flag is equivalent to `neg=1`.
+Producers SHOULD prefer `neg`. Consumers MUST accept both.
+
+```
+F[f1] t=claim neg n=warranty-excluded        # preferred
+F[f1] t=claim neg=1 n=warranty-excluded      # also valid
+```
+
+### 3.1.2 Inline quantities
+
+Quantities may appear inline anywhere a `Q[id]` reference is valid.
+Format: `VALUEUNIT` with no space. Frequency modifier appended directly.
+
+```
+K[k1] E[acme]>20000EUR E[beta] @<20260515 !
+C[r1] pen=5000EUR*d
+```
+
+Producers SHOULD use declared `Q[id]` records when the same value appears in two or more records.
+Producers SHOULD use inline quantities for single-use values and TMPL instances.
+
+### 3.1.3 TMPL positional syntax
+
+TMPL instances may use positional values instead of named `field=val` pairs.
+Field positions follow the order declared in `fields=`.
+A TMPL declaration may use typed fields with `:UNIT` annotation.
+
+```
+TMPL[line] fields=[item,h:h,rate:EUR,total:EUR]
+
+# positional (v3.1 preferred for dense tables)
+line[l1] E[svc-1] 40 150 6000
+
+# named (v3 compat, still valid)
+line[l1] item=E[svc-1] h=40h rate=EUR150 total=EUR6000
+```
+
+Mixed syntax within the same TMPL (some rows named, some positional) is not permitted.
+Consumers determine the mode from the first instance row encountered.
+
+### 3.1.4 Extended standard properties
+
+Standard short-name properties for domain-frequent concepts.
+Producers SHOULD prefer these over freestyle synonyms.
+
+| Prop | Meaning | Example |
+|------|---------|---------|
+| `jur=` | applicable law / jurisdiction | `jur=it-civil` |
+| `ven=` | venue / competent forum | `ven=trib-mi` |
+| `pen=` | penalty or sanction value | `pen=5000EUR*d` |
+| `cnd=` | trigger condition | `cnd=delay` |
+| `mth=` | method or procedure | `mth=rct` |
+| `fmt=` | format or media type | `fmt=pdf` |
+| `via=` | transmission channel | `via=email` |
+| `ref=` | external reference code | `ref=ISO-9001` |
+| `dur=` | duration | `dur=12mo` |
+| `qty=` | count without unit | `qty=3` |
 
 ---
 
@@ -290,20 +360,25 @@ Not permitted in record property values or outside conditions.
 
 ---
 
-## 9. Negation (`neg=1`)
+## 9. Negation
 
-Any record may carry `neg=1` to assert that the source document
+Any record may carry a negation marker to assert that the source document
 explicitly states its content as false, excluded, or inapplicable.
 
-Without `neg=1`: the record asserts its content as true.
-With `neg=1`: the record asserts the negated form.
+Two equivalent forms (v3.1):
+- `neg` as a standalone flag (preferred)
+- `neg=1` as a property (v3 compat, still valid)
+
+Consumers MUST accept both forms.
 
 ```
-F[f1] t=claim neg=1 n=warranty-excluded
-C[c1] neg=1 n=jurisdiction-clause-inapplicable
+F[f1] t=claim neg n=warranty-excluded
+C[c1] neg n=jurisdiction-clause-inapplicable
 ```
 
-`neg=1` has no effect on `X` (error) records.
+Without negation, the record asserts its content as true.
+With negation, it asserts the contrary.
+`neg` has no effect on `X` (error) records.
 
 ---
 
@@ -360,9 +435,21 @@ id[row-id] f1=val f2=val f3=val
 ```
 
 - Instances use the `TMPL[id]` name as their type
-- Fields are named and order-independent in instances
-- Field values: AION record references (`E[id]`, `Q[id]`) or literals
-- Anonymous instances allowed (`id[]` omitted)
+- **Named syntax**: fields are `name=val` pairs, order-independent (v3 compat)
+- **Positional syntax**: values in declaration order, no field names (v3.1, preferred for tables)
+- Mixed syntax within the same TMPL is forbidden
+- Consumers determine mode from the first instance row
+
+Typed field declarations (v3.1): `fields=[name:unit, ...]`
+
+```
+TMPL[obs] fields=[subject,value:pct,period:mo,cf:0-1]
+obs[o1] E[grp-int] 32 6 0.96
+obs[o2] E[grp-sr]  41 6 0.88
+```
+
+- Field values: AION record references (`E[id]`, `Q[id]`), inline quantities, or literals
+- Anonymous instances allowed (id omitted)
 - A consumer encountering an unknown 2-letter type MUST check `TMPL` declarations
   before emitting `X type=unknown`
 
@@ -394,7 +481,7 @@ Merges listed properties. Unlisted properties unchanged.
 | `dt=` | date | — |
 | `by=` | responsible entity | — |
 | `tags=` | label list | — |
-| `neg=` | `1` = negated assertion | — |
+| `neg` | negated assertion — standalone flag or `neg=1`, both accepted | — |
 
 ---
 
@@ -428,6 +515,10 @@ SHOULD:
 1. Place `E` declarations before content
 2. Use `S` to mirror source document structure
 3. Include `dt=`, `lang=`, `type=` in header
+4. Prefer `neg` flag over `neg=1` (v3.1)
+5. Use inline quantities for single-use values (v3.1)
+6. Use positional TMPL syntax for dense tabular data (v3.1)
+7. Use extended standard properties (`jur=` `ven=` `pen=` `cnd=` `mth=`) over freestyle synonyms (v3.1)
 
 ---
 
@@ -443,6 +534,9 @@ MUST:
 7. `RAW` block: treat all lines until `>>>` as opaque string
 8. Propagate `fr=` when forwarding downstream
 9. Version mismatch: emit `X field=v reason=unsupported`, halt
+10. Accept both `neg` and `neg=1` as equivalent (v3.1)
+11. Accept both named and positional TMPL instance syntax (v3.1)
+12. Accept inline quantities (`20000EUR`, `2pct*d`) wherever `Q[id]` is valid (v3.1)
 
 ---
 
