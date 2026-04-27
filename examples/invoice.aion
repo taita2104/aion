@@ -1,5 +1,5 @@
 # source: INV-2026-042.pdf | lang: it
-AION v=2 dt=260430 type=invoice lang=it src=INV-2026-042.pdf
+AION v=3 dt=20260430 type=invoice lang=it src=INV-2026-042.pdf
 
 E[beta] t=org role=supplier vat=IT12345678901 email=admin@beta.com
 E[acme] t=org role=client vat=IT98765432100
@@ -31,4 +31,4 @@ Q[total] = Q[subtotal] + Q[vat-amt]
 C[pay] E[acme]>Q[total] E[beta] @<+30dw ! method=bank-transfer
 C[late] trigger=timeout => penalty=2pct *mo E[acme]>E[beta]
 
-K[k1] by=acme t=pay Q[total] @<260530 ! s=0
+K[k1] by=acme t=pay Q[total] @<20260530 ! s=0

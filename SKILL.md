@@ -13,28 +13,25 @@ description: >
   "generate aion", "create aion file", "aion digest", ".aion".
 ---
 
-# AION v2 — AI Interop Object Notation
+# AION v3 — AI Interop Object Notation
 
-AION is a token-efficient artificial language for AI-to-AI information exchange.
+Token-efficient artificial language for AI-to-AI information exchange.
 No natural language. Every construct has exactly one interpretation.
-Universal: applies to any document type without domain-specific extensions.
+Universal: seven primitives cover any document type.
 
 **Core principle**: producer and consumer both load this skill. The skill is the contract.
-No parser, no middleware, no infrastructure.
 
 ---
 
 ## Design axioms
 
-1. BPE tokenizers assign 1 token to short ASCII sequences and common short English words.
-   Unicode symbols cost 2-4 tokens. AION uses only printable ASCII.
-2. Every document -- regardless of type -- is fully describable as a combination of
-   seven semantic primitives. No more are needed.
-3. The type system encodes *semantic role*, not domain. A clause in a contract and a
-   requirement in a spec are both `C`. A finding in a report and a stated fact in meeting
-   minutes are both `F`.
-4. Natural language never appears in AION except inside explicit `RAW:` escape blocks.
-5. Unknown constructs are silently forwarded, not rejected (forward compatibility).
+1. BPE tokenizers assign 1 token to short ASCII sequences. Unicode costs 2-4 tokens.
+   AION uses only printable ASCII.
+2. Every document is fully describable as seven semantic primitives. No more are needed.
+3. The type system encodes *semantic role*, not domain.
+4. Natural language never appears except inside explicit `RAW` escape blocks.
+5. Unknown constructs are silently ignored, not rejected (forward compatibility).
+6. Properties at default values MUST be omitted.
 
 ---
 
@@ -47,46 +44,47 @@ No parser, no middleware, no infrastructure.
 | `Q` | Quantity | Any measurable value with unit |
 | `K` | Action | Anything that must or should be done |
 | `C` | Condition | Any if-then, constraint, rule, obligation, permission |
-| `S` | Section | A structural grouping of records within the document |
+| `S` | Section | A structural grouping of records |
 | `L` | Link | A reference to an internal record or external resource |
+| `X` | Error | Encoding or interpretation failure (reserved) |
 
-Errors use a reserved code:
-
-| Code | Name | What it encodes |
-|------|------|-----------------|
-| `X` | Error | Encoding or interpretation failure |
-
-These eight codes cover all document types. Domain extensions (see SCHEMA) add subtypes,
-never new primitive codes.
+Custom types: 2-letter uppercase codes declared in `SCHEMA`.
 
 ---
 
-## File header
-
-Every `.aion` file begins with a header line:
+## File structure
 
 ```
-AION v=2 dt=YYMMDD type=TYPE lang=XX src=ORIGIN
+AION v=3 dt=YYYYMMDD type=CLASS lang=XX src=ORIGIN cf=N
+---
+SCHEMA           # optional — domain subtype extensions
+---
+E[...] F[...]    # entity declarations
+---
+C[...] K[...]    # content records
 ```
 
-| Prop | Meaning | Required |
-|------|---------|----------|
-| `v=` | AION version | yes |
-| `dt=` | document creation date | recommended |
-| `type=` | document class (see below) | recommended |
-| `lang=` | source language ISO 639-1 | recommended |
-| `src=` | origin system or filename | optional |
-| `cf=` | producer confidence 0.0-1.0 | optional |
+`---` separates sections. Empty sections may omit their `---`.
+The `AION` header line is the only required element.
+
+### Header properties
+
+| Prop | Format | Meaning |
+|------|--------|---------|
+| `v=` | integer | AION version (required) |
+| `dt=` | YYYYMMDD | document date |
+| `type=` | class code | document class |
+| `lang=` | ISO 639-1 | source language |
+| `src=` | string | origin filename or system |
+| `cf=` | 0.0-1.0 | producer confidence in the digest as a whole |
 
 ### Document classes (`type=`)
 
 ```
 contract    report      spec        email       minutes
 proposal    policy      invoice     brief       manual
-research    plan        form        audit       press
+research    plan        form        audit       press    doc
 ```
-
-If none fits: `type=doc` (generic).
 
 ---
 
@@ -96,49 +94,51 @@ If none fits: `type=doc` (generic).
 TYPE[id] prop=val prop=val OPERATOR TARGET ...
 ```
 
-- `TYPE` is a single uppercase letter
-- `[id]` is a unique alphanumeric identifier, no spaces, no special chars
-- `prop=val` pairs are space-separated, order-independent
-- Operators and targets encode relationships (see Operators)
-- Records are separated by blank line or `---`
+- `TYPE`: single uppercase letter
+- `[id]`: unique within the file; chars `a-z A-Z 0-9 - .`
+  ID uniqueness is **global** across all types. `C[x]` and `E[x]` cannot coexist.
+  References always include the type prefix: `E[alice]`, `C[c1]`.
+- `prop=val`: space-separated, order-independent
 - `[id]` may be omitted on anonymous records (no other record may reference them)
+- Records are separated by a blank line or `---`
 
 ---
 
 ## Entity subtypes (`t=`)
 
-`E` records use `t=` to declare what kind of entity they represent.
-
 ```
-person  org     system  place   product file    concept role    event
+person  org  system  place  product  file  concept  role  event
 ```
 
-Examples:
-```
-E[alice] t=person role=ceo
-E[acme] t=org sector=finance
-E[api-gw] t=system lang=python
-E[london] t=place
-E[mvp] t=product v=1
-```
+Entity-specific properties:
+
+| Prop | Meaning |
+|------|---------|
+| `role=` | functional role in document context |
+| `by=` | parent entity id |
+| `sector=` | industry or domain |
+| `vat=` | tax identifier |
+| `email=` | contact email |
 
 ---
 
 ## Fact subtypes (`t=`)
 
-`F` records use `t=` to declare the nature of the assertion.
-
 ```
 find    concl   desc    req     claim   def     warn    note    quote
 ```
 
-Examples:
-```
-F[f1] t=find cf=0.94 >>Q[q3]
-F[req-1] t=req p=1
-F[d-scope] t=desc
-F[w1] t=warn
-```
+| Subtype | Meaning |
+|---------|---------|
+| `find` | empirical finding or result |
+| `concl` | conclusion derived from findings |
+| `desc` | descriptive statement |
+| `req` | requirement (functional or non-functional) |
+| `claim` | asserted but unverified statement |
+| `def` | definition |
+| `warn` | warning, caveat, or limitation |
+| `note` | annotation or aside |
+| `quote` | verbatim attribution (use with `by=`) |
 
 ---
 
@@ -148,84 +148,114 @@ F[w1] t=warn
 
 | Op | Meaning |
 |----|---------|
-| `>` | transfers to / delivers to / sends / outputs |
-| `<` | receives from / accepts from / inputs |
-| `<>` | bilateral / mutual / between |
-| `>>` | depends on / follows from / derived from |
-| `=>` | implies / if-then / therefore |
-| `+` | includes / contains / adds |
-| `-` | excludes / removes / except |
-| `=` | equals / is defined as / has value |
+| `>` | transfers to / delivers to / sends |
+| `<` | receives from / accepts |
+| `<>` | bilateral / mutual |
+| `>>` | depends on / follows from (logical) |
+| `->` | precedes / comes before (sequential order) |
+| `=>` | implies / if-then |
+| `+` | includes / adds |
+| `-` | excludes / removes |
+| `=` | equals / is defined as |
 | `~=` | approximately equals |
-| `*` | for each / repeated / applies to all |
+| `*` | for each / applies to all |
 | `^` | version of / revision of |
+
+`>>` encodes logical dependency. `->` encodes strict temporal/procedural sequence.
+They are not interchangeable.
 
 ### Temporal
 
 | Op | Meaning |
 |----|---------|
-| `@` | at (point in time or place) |
+| `@` | at (point in time) |
 | `@<` | by / no later than |
 | `@>` | from / no earlier than |
-| `@+Nd` | in N calendar days from now |
-| `@+Ndw` | in N working days from now |
-| `@+Nmo` | in N months from now |
-| `*d` | per day / daily |
-| `*mo` | per month / monthly |
-| `*yr` | per year / annually |
+| `@+Nd` | in N calendar days |
+| `@+Ndw` | in N working days |
+| `@+Nmo` | in N months |
+| `*d` | per day |
+| `*mo` | per month |
+| `*yr` | per year |
+| `*u` | per unit |
 
 ### Modal
 
 | Op | Meaning |
 |----|---------|
 | `!` | mandatory / must |
-| `~` | optional / may / should |
+| `~` | optional / may / recommended |
 | `/` | prohibited / must not |
 | `?` | uncertain / unverified / inferred |
 
+`~` and `~=` are distinct: `~` is a standalone modal, `~=` is a compound relational operator.
+They cannot be confused in context: `~=` always has an operand on both sides.
+
+### Logical combinators (conditions only)
+
+| Op | Meaning |
+|----|---------|
+| `&` | AND |
+| `\|` | OR |
+
+Used only inside `C` records and `<<<` blocks to combine conditions or triggers.
+
+```
+C[c1] (E[a]! & E[b]!) => E[mvp].s=4
+C[c2] (E[a]~ \| E[b]~) => K[notify]
+```
+
+Parentheses `()` group sub-expressions. Maximum one level of nesting.
+
 ---
 
-## Date and time encoding
+## Negation
 
-Pure numeric, no separators.
+Any record can be negated with the `neg=1` property. It means:
+"the source document explicitly states this as false, excluded, or inapplicable."
+
+```
+F[f1] t=claim neg=1 n=warranty-excluded
+C[c1] neg=1 n=force-majeure-does-not-apply
+```
+
+Without `neg=1`, a record asserts its content as true. With `neg=1`, it asserts the contrary.
+
+---
+
+## Date and time
+
+4-digit year, no separators.
 
 | Format | Meaning | Example |
 |--------|---------|---------|
-| `YYMMDD` | date | `261001` |
+| `YYYYMMDD` | date | `20261001` |
 | `HHMM` | time 24h | `1430` |
-| `YYMMDD.HHMM` | datetime | `261001.1430` |
+| `YYYYMMDD.HHMM` | datetime | `20261001.1430` |
 | `+Nd` | relative N calendar days | `+30d` |
 | `+Ndw` | relative N working days | `+15dw` |
 | `+Nmo` | relative N months | `+6mo` |
+
+Relative dates are computed from the document date in the header.
 
 ---
 
 ## Quantities (`Q`)
 
-`Q` records encode any measurable value.
-
 ```
 Q[id] =VALUE UNIT *FREQ
 ```
 
-| Unit | Meaning | Unit | Meaning |
-|------|---------|------|---------|
-| `EUR` `USD` `GBP` | currency | `pct` | percent |
-| `mo` | months | `d` | days |
-| `dw` | working days | `h` | hours |
-| `MB` `GB` `TB` | storage | `r` | records/rows |
-| `u` | generic units | `km` `m` | distance |
-| `kg` `g` | weight | `C` `K` | temperature |
-
-Examples:
-```
-Q[total] =120000 EUR
-Q[rate] =10000 EUR *mo
-Q[penalty] =5000 EUR *d
-Q[dur] =12 mo
-Q[size] =2 GB
-Q[margin] =23 pct
-```
+| Category | Units |
+|----------|-------|
+| Currency | `EUR USD GBP JPY CHF` |
+| Time | `mo d dw h min` |
+| Storage | `KB MB GB TB` |
+| Ratio | `pct` |
+| Distance | `km m cm` |
+| Mass | `kg g` |
+| Temperature | `C K F` |
+| Generic | `u` (units) `r` (records/rows) |
 
 ---
 
@@ -233,7 +263,7 @@ Q[margin] =23 pct
 
 | Code | Meaning |
 |------|---------|
-| `0` | not started |
+| `0` | not started — **default, must be omitted** |
 | `1` | pending |
 | `2` | active |
 | `3` | review |
@@ -250,7 +280,7 @@ Q[margin] =23 pct
 | Code | Meaning |
 |------|---------|
 | `1` | high |
-| `2` | medium (default, omit) |
+| `2` | medium — **default, must be omitted** |
 | `3` | low |
 
 ---
@@ -260,57 +290,117 @@ Q[margin] =23 pct
 | Prop | Meaning |
 |------|---------|
 | `t=` | subtype |
-| `s=` | status |
-| `p=` | priority |
+| `s=` | status (omit if 0) |
+| `p=` | priority (omit if 2) |
 | `v=` | version |
 | `to=` | destination / routing |
 | `fr=` | source / provenance |
-| `cf=` | confidence 0.0-1.0 |
-| `n=` | short annotation |
-| `dt=` | date YYMMDD |
+| `cf=` | confidence in this record, 0.0-1.0 |
+| `n=` | human-readable label or short annotation |
+| `dt=` | date YYYYMMDD |
 | `by=` | responsible entity id |
-| `tags=` | categorical labels list |
+| `tags=` | labels list |
+| `neg=` | `1` = this record asserts the negative |
+
+`cf=` on a record is independent from `cf=` in the file header.
+Header `cf=` = confidence in the digest as a whole.
+Record `cf=` = confidence in that specific record's encoding.
 
 ---
 
 ## Long content blocks
 
-Append `<<<`/`>>>` immediately after a record for extended content.
-
-Inside blocks: AION operators and identifiers only. No natural language.
-`RAW:` prefix marks verbatim text that cannot be encoded without semantic loss.
-One `RAW:` line per block maximum. Treat as opaque string, do not parse.
+Append immediately after a record. A record may have at most one block.
 
 ```
-C[c1] E[supplier]>E[mvp] @<261001 ! +[E[doc-t],E[test],E[manual]]
+RECORD_LINE
 <<<
-E[client]<E[mvp]: ~ack @<@+15dw
-C[c1a]: timeout => E[mvp].s=4
+AION content — operators and identifiers only, no natural language
 >>>
+```
 
-C[c2] by=legal-dept
+### RAW escape
+
+For verbatim content that cannot be encoded without semantic loss.
+`RAW` opens a verbatim sub-block inside `<<<`/`>>>`. It ends at `>>>`.
+Multiple lines are allowed. `RAW` must be the last element in the block.
+
+```
+C[c1] E[supplier]>E[mvp] @<20261001 !
 <<<
-RAW: Testo normativo verbatim non comprimibile senza perdita semantica.
+E[client]<E[mvp]: ~ack @<+15dw
+C[c1a]: timeout => E[mvp].s=4
+RAW
+Il Fornitore si impegna a consegnare il Prodotto MVP entro il 1 ottobre 2026,
+comprensivo di documentazione tecnica, test di accettazione e manuale utente.
+La consegna si intende effettuata nel momento in cui il Cliente rilascia
+accettazione scritta. In assenza di risposta entro 15 giorni lavorativi,
+la consegna si intende tacitamente accettata.
 >>>
 ```
 
 ---
 
+## Sequence chains (`->`)
+
+For ordered steps where sequence matters, not just dependency:
+
+```
+K[step-1] -> K[step-2] -> K[step-3]
+```
+
+Or as a property on each record:
+
+```
+K[step-2] ->K[step-1]   # step-2 follows step-1
+```
+
+`->` is directional: `A -> B` means A comes before B.
+
+---
+
+## Template records (`TMPL`)
+
+For repeated structures (tables, line items, test cases, observations).
+
+Declare the template once, then instantiate:
+
+```
+TMPL[id] fields=[f1,f2,f3,f4]
+id[row-id] f1=val f2=val f3=val f4=val
+```
+
+Instances use the template name as the type. Fields are named (order-independent).
+Field values may reference AION records (`E[id]`, `Q[id]`) or be literals.
+
+```
+TMPL[inv-line] fields=[item,qty,rate,total]
+inv-line[l1] item=E[svc-1] qty=40h rate=EUR150 total=EUR6000
+inv-line[l2] item=E[svc-2] qty=8h rate=EUR250 total=EUR2000
+inv-line[l3] item=E[svc-3] qty=12h rate=EUR200 total=EUR2400
+```
+
+A consumer that does not recognize a template instance type should check declared `TMPL`
+records before emitting `X`. If the type matches a `TMPL[id]`, parse as template instance.
+
+---
+
 ## Section grouping (`S`)
 
-`S` records group related records and map document structure.
+```
+S[id] t=SUBTYPE +[RECORD_IDS]
+```
 
-```
-S[intro] t=introduction
-S[findings] t=results +[F[f1],F[f2],F[f3]]
-S[actions] t=next-steps +[K[k1],K[k2]]
-```
+If `+[...]` is present, it is authoritative for membership.
+If `+[...]` is absent, membership is determined by physical position in the file
+(records following this `S` until the next `S` or `---`).
+The two modes must not be mixed in the same file.
 
 Section subtypes:
 ```
-introduction    background    scope       methodology
-results         analysis      conclusion  recommendation
-appendix        next-steps    risk        financial
+introduction  background  scope       methodology  results
+analysis      conclusion  recommendation  appendix  next-steps
+risk          financial
 ```
 
 ---
@@ -318,49 +408,39 @@ appendix        next-steps    risk        financial
 ## Link records (`L`)
 
 ```
-L[id] >URL|ID t=TYPE n=LABEL
+L[id] >TARGET t=TYPE n=LABEL
 ```
 
-Link types:
+Target: `>https://...` or `>E[id]` or `>DOC:IDENTIFIER`
+Types: `cite ref attach replaces supersedes see-also`
+
+---
+
+## SCHEMA block
+
+Declare custom subtypes before first use. Syntax uses `=` throughout.
+
 ```
-cite    ref     attach  replaces    supersedes    see-also
+AION v=3 type=medical
+SCHEMA
+  E.t = patient doctor hospital drug procedure
+  F.t = diagnosis prognosis symptom allergy
+  Q.unit = mmHg bpm mgdl
+END
 ```
 
-Examples:
-```
-L[l1] >https://example.com/doc.pdf t=attach n=original-contract
-L[l2] >F[f3] t=see-also
-L[l3] >DOC:2024-SPEC-001 t=replaces
-```
+`SCHEMA` adds vocabulary only. It cannot define new primitive codes or operators.
 
 ---
 
 ## Delta updates
 
-Update an existing record by sending only changed properties:
-
 ```
-DELTA E[mvp] s=4 dt=260429 n=accepted-by-client
+DELTA E[id] prop=val prop=val
 ```
 
-Consumer merges listed properties into existing record. Unlisted properties unchanged.
-
----
-
-## SCHEMA block (domain extensions)
-
-Declare custom subtypes at the top of the file. Core primitive codes are never redefined.
-
-```
-AION v=2 type=medical
-SCHEMA
-  E.t: patient doctor hospital drug procedure
-  F.t: diagnosis prognosis symptom allergy
-  Q.unit: mmHg bpm mgdl
-END
-```
-
-SCHEMA only adds vocabulary. It never adds new primitive codes or operators.
+Merges listed properties into existing record. Unlisted properties unchanged.
+`DELTA` targeting a non-existent `[id]` is an error: emit `X reason=missing`.
 
 ---
 
@@ -377,50 +457,50 @@ X src=RECORD field=FIELD reason=REASON got=VAL expected=EXPECTED
 | `undeclared-subtype` | subtype not in SCHEMA |
 | `invalid-value` | value outside allowed range |
 | `parse-fail` | block content uninterpretable |
-
-On missing `[id]` in a referenced record: emit `X`, skip record.
-On unknown primitive code: emit `X type=unknown`, skip record.
-On unknown property: ignore, continue (forward compatibility).
-On unknown subtype not in SCHEMA: emit `X reason=undeclared-subtype`, use `t=unknown`.
+| `unsupported` | version not supported |
 
 ---
 
-## Producer rules
+## Producer rules (MUST)
 
-1. Every referenced record must have `[id]`
-2. Omit `p=2` (default priority) and `s=0` (default status)
-3. Use `<<<` blocks only when record-level properties are insufficient
-4. No natural language outside `RAW:` lines
-5. One `RAW:` line per block maximum
+1. Begin every file with `AION v=3`
+2. Every referenced record must have `[id]`; IDs are globally unique in the file
+3. Omit `s=0` and `p=2` (defaults)
+4. Use `<<<` blocks only when record-level properties are insufficient
+5. No natural language outside `RAW` blocks
 6. Declare custom subtypes in `SCHEMA` before first use
 7. Emit `X` for anomalies detected before sending
-8. Add `cf=` when output is probabilistic or derived by inference
+8. Add `cf=` to records whose content is probabilistic or inferred
+9. Use `->` for sequence, `>>` for logical dependency — never interchange them
 
-## Consumer rules
+## Consumer rules (MUST)
 
-1. Parse `TYPE[id] prop=val` as order-independent key-value
+1. Parse `TYPE[id] prop=val` as order-independent
 2. Unknown property: ignore, continue
-3. Unknown primitive code: emit `X type=unknown`, skip record
-4. Missing `[id]` on referenced record: emit `X field=id reason=missing`, skip record
-5. `DELTA`: merge, preserve unlisted properties
-6. `<<<` block: parse as AION; `RAW:` lines are opaque strings
-7. Propagate `fr=` when forwarding records downstream
-8. On version mismatch: emit `X field=v reason=unsupported got=N expected=2`
+3. Unknown 1-letter type: emit `X type=unknown`, skip record
+4. Unknown 2-letter type: check `TMPL` declarations before emitting `X`
+5. Missing `[id]` on referenced record: emit `X field=id reason=missing`, skip record
+6. `DELTA`: merge, preserve unlisted properties
+7. `RAW` block: treat all lines until `>>>` as opaque verbatim string
+8. Propagate `fr=` when forwarding records downstream
+9. Version mismatch: emit `X field=v reason=unsupported`, halt
 
 ---
 
-## Examples across document types
+## Examples
 
 ### Contract
 
 ```
-AION v=2 dt=260428 type=contract lang=it src=ctr-2026-001.pdf
+AION v=3 dt=20260428 type=contract lang=it src=ctr-2026-001.pdf cf=0.95
 
-E[acme] t=org role=client
-E[beta] t=org role=supplier
-E[m.rossi] t=person role=ceo by=acme
-E[j.smith] t=person role=ceo by=beta
-
+E[acme] t=org role=client vat=IT12345678901
+E[beta] t=org role=supplier vat=IT98765432100
+E[mvp] t=product
+E[doc-t] t=file n=technical-documentation
+E[test] t=file n=acceptance-tests
+E[manual] t=file n=user-manual
+---
 Q[total] =120000 EUR
 Q[rate] =10000 EUR *mo
 Q[deposit] =20000 EUR
@@ -428,22 +508,22 @@ Q[penalty-del] =5000 EUR *d
 Q[penalty-pay] =2 pct *d
 
 S[obligations]
-C[c1] E[beta]>E[mvp] @<261001 ! +[E[doc-t],E[test],E[manual]]
+C[c1] E[beta]>E[mvp] @<20261001 ! +[E[doc-t],E[test],E[manual]]
 <<<
-E[acme]<E[mvp]: ~ack @<+15dw
-C[c1a]: timeout => E[mvp].s=4
+(E[acme]~ack @<+15dw) | (timeout => E[mvp].s=4)
 >>>
-C[c2] E[acme]>Q[rate] @<*mo.01 @>260601 !
+C[c2] E[acme]>Q[rate] E[beta] @<*mo.01 @>20260601 !
 C[c3] law=it-civil forum=trib-mi
+C[c4] t=warranty neg=1 n=implied-warranties-excluded
 
 S[risk]
 C[r1] C[c1] trigger=delay => Q[penalty-del] E[beta]>E[acme]
 C[r2] C[c2] trigger=delay => Q[penalty-pay] E[acme]>E[beta]
 
 S[actions]
-K[k1] by=acme t=sign @<260501 !
-K[k2] by=beta t=sign @<260501 !
-K[k3] by=acme E[acme]>Q[deposit] @<260515 !
+K[k1] by=acme t=sign @<20260501 !
+K[k2] by=beta t=sign @<20260501 !
+K[k3] by=acme E[acme]>Q[deposit] E[beta] @<20260515 ! >>K[k1]
 ```
 
 ---
@@ -451,41 +531,41 @@ K[k3] by=acme E[acme]>Q[deposit] @<260515 !
 ### Technical specification
 
 ```
-AION v=2 dt=260415 type=spec lang=en src=api-spec-v3.md
+AION v=3 dt=20260415 type=spec lang=en src=api-spec-v3.md
 
-E[api] t=system v=3 by=backend-team
+E[api] t=system v=3
 E[client] t=system
-E[db] t=system t=product n=postgres-15
+E[db] t=system n=postgres-15
+---
+Q[uptime] =99.9 pct
+Q[latency-p99] =500 u n=ms
+Q[rate-limit] =1000 r *d
+Q[pool] =20 u
 
 S[requirements]
 F[r1] t=req E[api] p=1
 <<<
-E[client]>E[api]: auth=jwt ! @<200ms
-E[api]>E[client]: response=json !
+E[client]>E[api]: auth=jwt ! @<500ms
+E[api]>E[client]: format=json !
+E[api]/plaintext-credentials
 >>>
 F[r2] t=req E[api] p=1
 <<<
-E[api]>E[db]: pool=20 timeout=30d !
-E[api]/store plaintext-credentials
->>>
-F[r3] t=req p=2
-<<<
-E[api] rate-limit=1000r *d *E[client]
-E[api] => X[429] ~=F[r1]
+E[api]>E[db]: pool=Q[pool] !
+E[api] rate-limit=Q[rate-limit] *E[client] !
 >>>
 
 S[constraints]
 C[c1] E[api] deploy=container !
-C[c2] E[api] lang=[python,go] ~
-C[c3] E[db] / expose=public !
+C[c2] E[db] / expose=public !
+C[c3] E[api] uptime>=Q[uptime] !
+F[nf1] t=req latency-p99<Q[latency-p99] !
 
-Q[uptime] =99.9 pct
-Q[latency-p99] =500 ms
-Q[storage] =2 TB
-
-S[next-steps]
-K[k1] by=backend-team t=review F[r1] @<260422 !
-K[k2] by=arch t=approve @<260425 !
+S[actions]
+K[k1] by=backend t=review F[r1] @<20260422 !
+K[k2] by=arch t=approve @<20260425 ! >>K[k1]
+K[k3] by=devops t=deploy @<20260501 ~ >>K[k2]
+K[k1] -> K[k2] -> K[k3]
 ```
 
 ---
@@ -493,43 +573,45 @@ K[k2] by=arch t=approve @<260425 !
 ### Research report
 
 ```
-AION v=2 dt=260301 type=research lang=en src=study-2026-llm.pdf cf=0.91
+AION v=3 dt=20260301 type=research lang=en cf=0.91
 
 E[study] t=concept n=llm-efficiency-2026
-E[team] t=org n=research-group
-Q[n] =1240 u n=sample-size
+E[grp-ctrl] t=concept n=control-group
+E[grp-int] t=concept n=intervention-group
+---
+Q[n] =1240 u
 Q[period] =6 mo
+Q[eff-main] ~=32 pct cf=0.96
+Q[eff-sr] ~=41 pct cf=0.88
+Q[eff-jr] ~=21 pct cf=0.88
+Q[p-val] =0.003 u
 
 S[methodology]
-F[m1] t=desc E[study] method=rct n=randomized-controlled
-F[m2] t=desc E[study] +[Q[n],Q[period]]
+F[m1] t=desc method=rct parts=[E[grp-ctrl],E[grp-int]] +[Q[n],Q[period]]
 
 S[results]
 F[f1] t=find cf=0.96
 <<<
-Q[efficiency] ~= +32 pct >>intervention-group
-Q[baseline] = control-group
-C[significance] p-val=0.003 < 0.05
+E[grp-int] Q[eff-main] vs E[grp-ctrl]
+Q[p-val] < 0.05 => statistically-significant
 >>>
 F[f2] t=find cf=0.88
 <<<
-E[subgroup:senior] => Q[efficiency] ~= +41 pct
-E[subgroup:junior] => Q[efficiency] ~= +21 pct
+E[grp-sr] => Q[eff-sr]
+E[grp-jr] => Q[eff-jr]
 >>>
-F[f3] t=warn cf=0.72 n=confound
+F[f3] t=warn cf=0.72
 <<<
-C[confound-1] E[study] ? selection-bias
-C[confound-2] E[study] ? self-report-bias
+? selection-bias & ? self-report-bias
 >>>
 
 S[conclusion]
 F[c1] t=concl >>F[f1] cf=0.94
-F[c2] t=concl >>F[f2] cf=0.85
-F[lim] t=warn >>F[f3]
+F[lim] t=warn >>F[f3] n=generalizability-limited
 
-S[next-steps]
-K[k1] t=recommend replication-study @<270101 ~
-K[k2] t=recommend larger-n >>F[lim] ~
+S[actions]
+K[k1] t=recommend n=replication-study @<20270101 ~
+K[k2] t=recommend n=double-blind >>F[f3] ~
 ```
 
 ---
@@ -537,34 +619,32 @@ K[k2] t=recommend larger-n >>F[lim] ~
 ### Meeting minutes
 
 ```
-AION v=2 dt=260420 type=minutes lang=en src=standup-260420
+AION v=3 dt=20260420 type=minutes lang=en
 
 E[alice] t=person role=pm
 E[bob] t=person role=dev
 E[carol] t=person role=qa
-E[sprint-7] t=concept
-
+E[sprint-7] t=concept @<20260430
+---
 S[decisions]
-F[d1] t=claim E[sprint-7] scope=reduced -[E[feat-x]]
+F[d1] t=claim E[sprint-7]
 <<<
-E[alice]<>E[bob]: E[feat-x] => S[sprint-8]
-C[d1a]: deadline E[sprint-7] unchanged @=260430
->>>
-F[d2] t=claim by=carol
-<<<
-E[qa] E[sprint-7] +regression-suite @<260425
+E[feat-x] => S[sprint-8]
+deadline=unchanged @=20260430
+E[alice]<>E[bob]: agreed
 >>>
 
 S[actions]
-K[k1] by=bob t=implement E[feat-auth] @<260424 ! s=2
-K[k2] by=carol t=test E[feat-auth] @<260426 ! s=0 >>K[k1]
-K[k3] by=alice t=update E[roadmap] @<260422 ~ s=0
+K[k1] by=bob t=implement @<20260424 ! s=2
+K[k2] by=carol t=test @<20260426 ! >>K[k1]
+K[k3] by=alice t=update @<20260422 ~
+K[k1] -> K[k2]
 
 S[risks]
-F[r1] t=warn K[k1] ? delay
+F[r1] t=warn K[k1] ? p=1
 <<<
-C[r1a]: K[k1] delay => K[k2] blocked
-C[r1b]: K[k2] blocked => E[sprint-7].s=7
+K[k1] delay => K[k2].s=7
+K[k2].s=7 => E[sprint-7].s=7
 >>>
 ```
 
@@ -573,26 +653,21 @@ C[r1b]: K[k2] blocked => E[sprint-7].s=7
 ### Invoice
 
 ```
-AION v=2 dt=260430 type=invoice lang=it src=INV-2026-042.pdf
+AION v=3 dt=20260430 type=invoice lang=it src=INV-2026-042.pdf
 
 E[beta] t=org role=supplier vat=IT12345678901
 E[acme] t=org role=client vat=IT98765432100
-E[inv] t=file n=INV-2026-042
+---
+TMPL[line] fields=[item,h,rate,total]
+line[l1] item=E[svc-1] h=40 rate=EUR150 total=EUR6000
+line[l2] item=E[svc-2] h=8 rate=EUR250 total=EUR2000
 
 Q[subtotal] =8000 EUR
 Q[vat] =22 pct
 Q[vat-amt] =1760 EUR
 Q[total] =9760 EUR
-Q[due] =30 dw
 
-F[f1] t=desc E[beta]>E[acme] E[inv]
-<<<
-E[svc-1] t=concept n=sviluppo-modulo-A h=40 rate=150 EUR =6000 EUR
-E[svc-2] t=concept n=consulenza-arch h=8 rate=250 EUR =2000 EUR
->>>
-
-C[pay] E[acme]>Q[total] E[beta] @<+30dw ! method=bonif
-C[late] timeout => Q[penalty] =2 pct *mo E[acme]>E[beta]
-
-K[k1] by=acme t=pay Q[total] @<260530 !
+C[pay] E[acme]>Q[total] E[beta] @<+30dw ! method=bank-transfer
+C[late] trigger=timeout => penalty=2pct *mo E[acme]>E[beta]
+K[k1] by=acme t=pay Q[total] @<20260530 !
 ```

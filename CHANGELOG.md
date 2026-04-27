@@ -2,13 +2,41 @@
 
 All notable changes to the AION specification are documented here.
 
-Format: `[VERSION] YYMMDD — description`
+Format: `[VERSION] YYYYMMDD — description`
 
 Breaking changes are marked **BREAKING**.
 
 ---
 
-## [2] 260427 — Universal primitives
+## [3] 20260427
+
+### Breaking changes
+
+- **Date format**: `YYMMDD` → `YYYYMMDD`. Two-digit years are rejected by v3 consumers.
+- **ID uniqueness**: IDs are now globally unique across all types within a file.
+  `C[x]` and `E[x]` in the same file is a v3 error. v2 files that relied on per-type
+  uniqueness must be updated.
+- **SCHEMA separator**: `E.t: subtypes` → `E.t = subtypes`. Colon syntax is rejected.
+- **RAW single-line rule removed**: `RAW:` (colon, single line) replaced by `RAW` (block
+  opener, multi-line until `>>>`). v2 `RAW:` lines are not valid v3.
+- **`s=0` and `p=2`**: changed from SHOULD omit to MUST omit. v3 producers that emit
+  default values are non-conforming.
+
+### Additions
+
+- `->` sequence operator: encodes strict temporal/procedural ordering.
+  Distinct from `>>` (logical dependency).
+- `&` and `|` logical combinators: usable inside `C` records and `<<<` blocks only.
+- `neg=1` property: asserts that a record's content is explicitly negated in the source.
+- `TMPL[id]` template records: compact encoding of repeated tabular structures.
+- `cf=` semantics clarified: header `cf=` = digest-level confidence;
+  record `cf=` = record-level confidence. Independent values.
+- Section membership rule clarified: explicit `+[...]` is authoritative;
+  positional is fallback; mixing both in the same file is forbidden.
+
+---
+
+## [2] 20260415
 
 Complete redesign from v1.
 
@@ -19,25 +47,24 @@ Complete redesign from v1.
 - Replaced domain-specific types (DOC TSK MTG MSG EVT ENT ERR ACK REQ RES)
   with 7 universal primitives (E F Q K C S L) + error code X
 - Document metadata moved from `D[id]` record to `AION` header line
-- Added `type=` document class declaration in header
+- Added `type=` document class in header
 - Added `SCHEMA` block for domain-specific subtype extensions
-- Added `S` (Section) primitive for structural grouping
-- Added `L` (Link) primitive for references and citations
+- Added `S` (Section) and `L` (Link) primitives
 - Added `F.t=` fact subtypes: find concl desc req claim def warn note quote
 - Added `E.t=` entity subtypes: person org system place product file concept role event
-- Added `cf=` confidence property to all record types
-- `RAW:` escape limited to one per block
-- Delta syntax unchanged
-- Error record syntax unchanged
+- Added `cf=` confidence property
+- `RAW:` single-line escape introduced (replaced in v3)
+- Delta syntax unchanged from v1
+- Error record syntax unchanged from v1
 
 ---
 
-## [1] 260415 — Initial release
+## [1] 20260401
 
-First draft. Domain-specific type set:
+Initial release. Domain-specific type set:
 DOC TSK MTG MSG EVT ENT ERR ACK REQ RES
 
-Operator set established (unchanged in v2).
-Date encoding established (unchanged in v2).
-Quantity encoding established (unchanged in v2).
-`<<<`/`>>>` block syntax established (unchanged in v2).
+Operator set established (core subset unchanged in v3).
+Date encoding established (YYMMDD, changed to YYYYMMDD in v3).
+Quantity encoding established (unchanged in v3).
+`<<<`/`>>>` block syntax established (unchanged in v3).

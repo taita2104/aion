@@ -152,7 +152,7 @@ See the [`examples/`](examples/) directory for complete `.aion` files across doc
 
 ## Specification
 
-The full formal specification lives in [`spec/AION-v2.md`](spec/AION-v2.md).
+The full formal specification lives in [`spec/AION-v3.md`](spec/AION-v3.md).
 
 The `SKILL.md` in the repository root is the deployable version -- optimized for loading into AI system prompts.
 
@@ -160,9 +160,9 @@ The `SKILL.md` in the repository root is the deployable version -- optimized for
 
 ## Versioning
 
-AION uses integer versions. The current version is **2**.
+AION uses integer versions. The current version is **3**.
 
-Every `.aion` file declares its version in the header (`v=2`). Consumers that encounter an unsupported version emit `X field=v reason=unsupported got=N expected=2` and halt.
+Every `.aion` file declares its version in the header (`v=3`). Consumers that encounter an unsupported version emit `X field=v reason=unsupported got=N expected=3` and halt.
 
 Breaking changes increment the version. Additive changes (new subtypes, new document classes) do not.
 

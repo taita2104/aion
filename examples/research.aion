@@ -1,5 +1,5 @@
 # source: llm-efficiency-study-2026.pdf | lang: en | pages: 28
-AION v=2 dt=260301 type=research lang=en src=study-2026-llm.pdf cf=0.91
+AION v=3 dt=20260301 type=research lang=en src=study-2026-llm.pdf cf=0.91
 
 E[study] t=concept n=llm-efficiency-2026
 E[team] t=org n=ai-research-group
@@ -43,6 +43,6 @@ F[c2] t=concl >>F[f2] cf=0.85
 F[lim] t=warn >>F[f3] n=generalizability-limited
 
 S[next-steps] t=next-steps
-K[k1] t=recommend n=replication-study @<270101 ~
+K[k1] t=recommend n=replication-study @<2027101 ~
 K[k2] t=recommend n=larger-n >>F[lim] ~
 K[k3] t=recommend n=double-blind-protocol >>F[f3] ~

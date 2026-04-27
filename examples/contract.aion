@@ -1,5 +1,5 @@
 # source: software-development-agreement.pdf | lang: it | pages: 40
-AION v=2 dt=260428 type=contract lang=it src=ctr-2026-001.pdf cf=0.95
+AION v=3 dt=20260428 type=contract lang=it src=ctr-2026-001.pdf cf=0.95
 
 E[acme] t=org role=client vat=IT12345678901
 E[beta] t=org role=supplier vat=IT98765432100
@@ -21,12 +21,12 @@ S[scope] t=scope
 F[f-scope] t=desc E[acme]<>E[beta] +[E[mvp],Q[dur],Q[total]]
 
 S[obligations] t=next-steps
-C[c1] E[beta]>E[mvp] @<261001 ! +[E[doc-t],E[test],E[manual]]
+C[c1] E[beta]>E[mvp] @<20261001 ! +[E[doc-t],E[test],E[manual]]
 <<<
 E[acme]<E[mvp]: ~ack @<+15dw
 C[c1a]: timeout => E[mvp].s=4
 >>>
-C[c2] E[acme]>Q[rate] E[beta] @<*mo.01 @>260601 !
+C[c2] E[acme]>Q[rate] E[beta] @<*mo.01 @>2026601 !
 C[c3] law=it-civil forum=trib-mi
 
 S[risk] t=risk
@@ -34,6 +34,6 @@ C[r1] C[c1] trigger=delay => Q[penalty-del] E[beta]>E[acme]
 C[r2] C[c2] trigger=delay => Q[penalty-pay] E[acme]>E[beta]
 
 S[actions] t=next-steps
-K[k1] by=acme t=sign @<260501 ! s=0
-K[k2] by=beta t=sign @<260501 ! s=0
-K[k3] by=acme E[acme]>Q[deposit] E[beta] @<260515 ! s=0 >>K[k1]
+K[k1] by=acme t=sign @<20260501 ! s=0
+K[k2] by=beta t=sign @<20260501 ! s=0
+K[k3] by=acme E[acme]>Q[deposit] E[beta] @<20260515 ! s=0 >>K[k1]

@@ -1,5 +1,5 @@
 # source: api-specification-v3.md | lang: en
-AION v=2 dt=260415 type=spec lang=en src=api-spec-v3.md
+AION v=3 dt=20260415 type=spec lang=en src=api-spec-v3.md
 
 E[api] t=system v=3 by=backend-team
 E[client] t=system
@@ -42,6 +42,6 @@ F[nf1] t=req latency-p99<Q[latency-p99] !
 F[nf2] t=req storage=Q[storage] ~ n=initial-allocation
 
 S[actions] t=next-steps
-K[k1] by=backend-team t=review F[r1] @<260422 ! s=0
-K[k2] by=arch t=approve @<260425 ! s=0 >>K[k1]
-K[k3] by=devops t=deploy E[api] @<260501 ~ s=0 >>K[k2]
+K[k1] by=backend-team t=review F[r1] @<20260422 ! s=0
+K[k2] by=arch t=approve @<20260425 ! s=0 >>K[k1]
+K[k3] by=devops t=deploy E[api] @<20260501 ~ s=0 >>K[k2]
