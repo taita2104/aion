@@ -241,6 +241,101 @@ Per-session saving for a two-agent pipeline: ~5725 tokens.
 
 ---
 
+## 3.3 Changes in revision 3.3 (additive only)
+
+File headers remain `v=3`. All v3, v3.1, v3.2 syntax remains valid.
+
+### 3.3.1 Epistemic status property `ep=`
+
+Applies to `F` records. Encodes the epistemic standing of the assertion.
+
+| Value | Meaning |
+|-------|---------|
+| `assert` | stated by a party, not independently verified |
+| `claim` | asserted but disputed or unverified |
+| `corr` | correlation established, causation not claimed |
+| `evid` | empirical evidence |
+| `demo` | demonstrated by experiment or formal argument |
+| `estab` | established / settled / uncontested |
+| `disput` | explicitly contested; use `src=` to identify the contesting party |
+| `refut` | refutes another record; use `>>` to identify the target |
+
+```
+F[f1] t=find  ep=evid  cf=0.96
+F[f2] t=find  ep=corr  cf=0.81
+F[f3] t=concl ep=estab cf=1.0
+F[f4] t=claim ep=disput src=E[party-b]
+F[f5] t=find  ep=refut >>F[f2]
+```
+
+`ep=` is optional. Omit when epistemic status is not meaningful or not determinable.
+
+### 3.3.2 F subtype additions: `corr`, `evid`, `refut`
+
+Three new `F.t=` subtypes to distinguish argumentative force.
+
+| Subtype | Meaning |
+|---------|---------|
+| `corr` | correlation finding (non-causal) |
+| `evid` | empirical evidence supporting a claim |
+| `refut` | refutation of another record |
+
+These complement the existing `find` (general finding) and `concl` (conclusion).
+`ep=` and `t=` are independent and may be combined freely.
+
+### 3.3.3 Temporal validity property `valid=`
+
+Applies to `C` records and any record with bounded temporal applicability.
+Distinct from `dt=` (record creation date) and `@<`/`@>` (deadline/start operators).
+
+```
+valid=YYYYMMDD:YYYYMMDD   # applies from date A to date B (inclusive)
+valid=YYYYMMDD:            # applies from date A onward (open-ended)
+valid=:YYYYMMDD            # applies until date B (open-ended start)
+```
+
+Example:
+```
+C[c1] jur=it-civil valid=20260601:20271231   # clause active for 18 months
+C[c2] valid=:20261231                        # only applies until year-end
+```
+
+### 3.3.4 Digest coverage metadata: `cov=` and `excl=`
+
+Header-level properties declaring how much of the source document is covered.
+
+| Property | Format | Meaning |
+|----------|--------|---------|
+| `cov=` | 0.0-1.0 | fraction of source document semantically covered |
+| `excl=` | `[id,id]` | section names or identifiers intentionally excluded |
+
+```
+AION v=3 dt=20260428 type=contract cf=0.95 cov=0.85 excl=[schedule-b,appendix-c]
+```
+
+`cov=1.0` asserts complete coverage. `cov=` absent means coverage unknown.
+`excl=` helps the consumer AI avoid assuming that absent content is absent from the source.
+
+### 3.3.5 Definition linking convention (producer rule)
+
+When a record uses a term defined by an `F[id] t=def` record elsewhere in the file,
+the producer SHOULD add `>>F[def-id]` to make the semantic link explicit and navigable.
+
+```
+F[d1] t=def n=delivery-date
+<<<
+RAW
+"Delivery Date" means the date on which E[b] transfers E[mvp] to E[a].
+>>>
+
+C[c1] E[b]>E[mvp] @<20261001 ! >>F[d1]   # uses definition F[d1]
+```
+
+This is a convention, not a structural constraint. Consumers MUST NOT reject records
+that omit `>>F[def-id]` links.
+
+---
+
 ## 4. File structure
 
 ```

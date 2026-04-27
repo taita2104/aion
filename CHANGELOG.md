@@ -8,6 +8,18 @@ Breaking changes are marked **BREAKING**.
 
 ---
 
+## [3.3] 20260427
+
+File headers remain `v=3`. All v3/v3.1/v3.2 syntax valid. No breaking changes.
+
+- `ep=` epistemic status on F records: `assert·claim·corr·evid·demo·estab·disput·refut`
+- F.t additions: `corr` (correlation) · `evid` (empirical evidence) · `refut` (refutation)
+- `valid=YYYYMMDD:YYYYMMDD` temporal validity on C records and any bounded record
+- `cov=0-1` and `excl=[ids]` in header: digest coverage metadata
+- Producer convention: `>>F[def-id]` on records using defined terms
+
+---
+
 ## [3.2] 20260427 — Additive improvements, no breaking changes
 
 File headers remain `v=3`. All v3 and v3.1 constructs valid in v3.2.
@@ -44,7 +56,7 @@ Session overhead (producer + consumer): 17,400 → 7,500 tokens.
 
 ---
 
-## [3.1] 20260427 — Additive improvements, no breaking changes
+
 
 File headers remain `v=3`. All v3 constructs are valid in v3.1.
 v3.1 consumers MUST also accept all v3 syntax.

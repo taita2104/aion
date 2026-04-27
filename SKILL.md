@@ -13,11 +13,11 @@ description: >
   "generate aion", "create aion file", "aion digest", ".aion".
 ---
 
-# AION v3.2
+# AION v3.3
 
 Token-efficient artificial language for AI-to-AI document exchange. No natural language.
 Both producer and consumer load this skill. The skill is the contract.
-File headers declare `v=3`. v3.2 is fully backward compatible with v3 and v3.1.
+File headers declare `v=3`. v3.3 is fully backward compatible with v3, v3.1, v3.2.
 
 ## RECORD
 
@@ -37,7 +37,7 @@ E entity · F fact · Q quantity · K action · C condition · S section · L li
 Custom types: 2-letter uppercase codes declared in SCHEMA.
 
 E.t= `person org system place product file concept role event`
-F.t= `find concl desc req claim def warn note quote`
+F.t= `find concl desc req claim def warn note quote corr evid refut`
 K.t= `sign approve review test deploy notify recommend`
 S.t= `introduction background scope methodology results analysis conclusion recommendation appendix next-steps risk financial`
 L.t= `cite ref attach replaces supersedes see-also`
@@ -82,8 +82,11 @@ t=  subtype          s=  status        p=  priority      v=  version
 n=  label/note       by= responsible   to= destination   fr= source
 cf= confidence       dt= date          tags= labels       neg negated (= neg=1)
 wt= weight 0-100     vs= compare-to    d=  delta
+ep= epistemic-status (F records): assert·claim·evid·corr·demo·estab·disput·refut
+valid= temporal validity: YYYYMMDD:YYYYMMDD · YYYYMMDD: · :YYYYMMDD
 ```
 
+Header extras: `cov=0-1` digest coverage fraction · `excl=[id,id]` intentionally excluded sections.
 Extended standard: `jur= ven= pen= cnd= mth= fmt= via= ref= dur= qty=`
 Use extended props over freestyle synonyms for inter-producer consistency.
 
@@ -177,6 +180,9 @@ research plan form audit press whitepaper sdk rfp financial doc
 9. `neg` over `neg=1` · inline Q for single-use values
 10. `wt=` not `p=` for numeric weight · `vs=`+`d=` for comparisons
 11. Extended props (`jur=` `ven=` etc.) over freestyle synonyms
+12. `ep=` on F records where epistemic status is meaningful
+13. `valid=` on C records with bounded temporal applicability
+14. `>>F[def-id]` on records that use a term defined elsewhere
 
 ## CONSUMER MUST
 
@@ -196,7 +202,7 @@ research plan form audit press whitepaper sdk rfp financial doc
 ## EXAMPLE
 
 ```
-AION v=3 dt=20260428 type=contract lang=it cf=0.95
+AION v=3 dt=20260428 type=contract lang=it cf=0.95 cov=0.9 excl=[schedule-b]
 
 E[a] t=org role=client vat=IT12345678901
 E[b] t=org role=supplier vat=IT98765432100
@@ -209,9 +215,18 @@ C[c1] E[b]>E[mvp] @<20261001 ! +[E[doc],E[test],E[man]]
 E[a]~ack @<+15dw | (timeout => E[mvp].s=4)
 >>>
 C[c2] E[a]>Q[fee] E[b] @<*mo.01 ! jur=it-civil ven=trib-mi
-C[c3] cnd=delay pen=5000EUR*d E[b]>E[a]
+C[c3] cnd=delay pen=5000EUR*d E[b]>E[a] valid=20260601:20271231
 
 K[k1] by=a t=sign @<20260501 !
 K[k2] by=b t=sign @<20260501 !
 K[k3] by=a E[a]>20000EUR E[b] @<20260515 ! >>K[k1]
+```
+
+`ep=` usage across document types:
+```
+F[f1] t=find  ep=evid  cf=0.96   # empirical evidence
+F[f2] t=find  ep=corr  cf=0.81   # correlation, not causation
+F[f3] t=concl ep=estab cf=1.0    # established/settled
+F[f4] t=claim ep=disput src=E[x] # contested by party x
+F[f5] t=find  ep=refut >>F[f2]   # refutes f2
 ```
