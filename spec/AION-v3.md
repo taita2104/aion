@@ -115,6 +115,132 @@ Producers SHOULD prefer these over freestyle synonyms.
 
 ---
 
+## 3.2 Changes in revision 3.2 (additive only)
+
+All changes in this revision are backward compatible. File headers remain `v=3`.
+v3.2 consumers MUST also accept all v3 and v3.1 syntax.
+
+### 3.2.1 Multi-source dependency `>>[A,B]`
+
+`>>` becomes variadic. A record may declare dependency on multiple sources simultaneously.
+
+```
+F[c] >>[F[a],F[b]]          # c follows from A and B together (conjunction)
+F[c] >>F[a] | >>F[b]        # c follows from A or B (use | combinator)
+```
+
+Single-source `>>F[a]` remains valid. `>>[A]` with one element is equivalent.
+
+### 3.2.2 Parallel operator `||`
+
+Encodes concurrent / parallel execution. Distinct from `->` (sequence) and `>>` (dependency).
+
+```
+K[b] || K[c]                     # b and c execute concurrently
+K[a] -> (K[b] || K[c]) -> K[d]  # sequence with parallel block
+```
+
+Parentheses group parallel sets. Maximum one level of nesting.
+
+### 3.2.3 Quantity range `=MIN..MAX`
+
+Any `Q` record or inline quantity may declare a range instead of a single value.
+
+```
+Q[latency] =50..500 u n=ms
+Q[guidance] =52000000..58000000 EUR
+F[f1] t=claim cf=0.85 >>[Q[eff-a],Q[baseline]]
+<<<
+Q[eff-a] =28..36 pct cf=0.88
+>>>
+```
+
+Inline range: `50..500u` `28..36pct`
+
+### 3.2.4 Comparison properties `vs=` and `d=`
+
+`vs=` references a comparison baseline. `d=` encodes the delta value.
+Both apply to `Q` records and inline quantities.
+
+```
+Q[rev-25] =48200000 EUR vs=Q[rev-24] d=+16.7pct
+Q[err-rate] ~=2.3 pct vs=Q[err-baseline] d=-0.8pct
+```
+
+### 3.2.5 Weight property `wt=`
+
+Numeric weight 0-100 for requirements, evaluation criteria, risk factors, decisions.
+
+```
+F[r1] t=req wt=40 n=security
+F[r2] t=req wt=15 n=scalability
+```
+
+`wt=` is independent from `p=`. Priority `p=` is ordinal (1/2/3); weight `wt=` is numeric.
+
+### 3.2.6 Document class vocabulary additions
+
+Added to `type=` recognized values: `whitepaper sdk rfp financial`
+
+---
+
+---
+
+## 3.2 Changes in revision 3.2 (additive only)
+
+File headers remain `v=3`. All v3 and v3.1 syntax remains valid.
+
+### 3.2.1 Multi-source dependency `>>[A,B]`
+
+`>>` extended to accept a list of sources. `F[c] >>[F[a],F[b]]` means c follows from A and B together.
+`F[c] >>F[a] | >>F[b]` means c follows from A or B. Single-source `>>F[a]` unchanged.
+
+### 3.2.2 Weight property `wt=`
+
+Numeric weight 0–100 on any record. Replaces `p=` when cardinal (not ordinal) weight is needed.
+`F[r1] t=req wt=40` — requirement weighted at 40/100.
+`p=` (1/2/3 ordinal) and `wt=` (0–100 cardinal) are independent; both may appear.
+
+### 3.2.3 Comparison properties `vs=` and `d=`
+
+`vs=` references another record for comparison. `d=` encodes the delta value.
+```
+Q[rev-25] =48200000 EUR vs=Q[rev-24] d=+16.7pct
+F[f1] t=find vs=F[baseline] d=+32pct cf=0.96
+```
+
+### 3.2.4 Quantity ranges
+
+Q values may declare a range with `..`:
+```
+Q[guidance] =52000000..58000000 EUR
+Q[latency]  =50..500 u n=ms
+Q[temp]     =36.5..37.5 C
+```
+Lower bound is inclusive. Upper bound is inclusive. Both must share the same unit.
+
+### 3.2.5 Parallel operator `||`
+
+For concurrent tasks or simultaneous events in a sequence chain:
+```
+K[b] || K[c]                    # b and c are concurrent
+K[a] -> (K[b] || K[c]) -> K[d] # sequence with parallel block
+```
+`||` is only valid in `->` chains and `<<<` blocks. Not valid as a standalone record.
+
+### 3.2.6 New document classes
+
+Added to `type=` vocabulary: `whitepaper sdk rfp financial`
+
+### 3.2.7 SKILL.md rewritten for token efficiency
+
+The deployable `SKILL.md` was rewritten from ~4374 tokens (spec-format) to ~1511 tokens (compact-format).
+All normative content preserved. Tables replaced with compact inline notation.
+Examples reduced to one minimal illustrative example; full examples remain in `examples/`.
+Per-session saving for a two-agent pipeline: ~5725 tokens.
+
+---
+
 ## 4. File structure
 
 ```
@@ -540,9 +666,31 @@ MUST:
 
 ---
 
-## 19. Versioning policy
+## 20. Economic use threshold
+
+AION is not universally token-efficient. The skill must be loaded by both producer and
+consumer (~7,500 tokens combined overhead per session). This overhead is recovered only
+when the documents being exchanged are long enough to benefit from compression.
+
+| Document length | Compression ratio | Recommendation |
+|----------------|-------------------|----------------|
+| < 3 pages / < 500 tokens | < 1x (overhead exceeds savings) | do not use AION |
+| 3-10 pages / 500-2,000 tokens | 2x-5x | use if multiple docs per session |
+| 10-30 pages / 2,000-8,000 tokens | 5x-10x | use |
+| > 30 pages / > 8,000 tokens | 10x-15x | strongly recommended |
+
+For short documents (invoices, brief emails, short minutes), pass the original text directly.
+The structural overhead of entity declarations, section markers, and property syntax
+exceeds the natural language savings for documents under ~500 tokens.
+
+The overhead amortizes quickly across a session: loading the skill once and processing
+5 long documents in a session yields ~5x net token savings per document.
+
+-e 
+## 21. Versioning policy
 
 - Current version: **3**
 - Breaking changes increment the integer
 - Additive changes (new subtypes, new document classes) do not
 - Consumers declare supported versions; multi-version support is permitted
+

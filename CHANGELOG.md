@@ -8,7 +8,43 @@ Breaking changes are marked **BREAKING**.
 
 ---
 
-## [3.1] 20260427 — Additive improvements, no breaking changes
+## [3.2] 20260427 — Additive improvements, no breaking changes
+
+File headers remain `v=3`. All v3 and v3.1 constructs valid in v3.2.
+
+### Multi-source dependency `>>[A,B]`
+`>>` is now variadic. `F[c] >>[F[a],F[b]]` encodes dependency on A and B together.
+Single-source `>>F[a]` unchanged.
+
+### Parallel operator `||`
+`K[b] || K[c]` = b and c execute concurrently.
+`K[a] -> (K[b] || K[c]) -> K[d]` = sequence with parallel block.
+Distinct from `->` (sequence) and `>>` (logical dependency).
+
+### Quantity range `=MIN..MAX`
+`Q[latency] =50..500 u` and inline `50..500u` for estimated or acceptable ranges.
+
+### Comparison properties `vs=` and `d=`
+`Q[rev-25] =48200000 EUR vs=Q[rev-24] d=+16.7pct` for multi-period or comparative data.
+
+### Weight property `wt=`
+`F[r1] t=req wt=40` — numeric weight 0-100, independent from priority `p=`.
+
+### Document class vocabulary
+Added: `whitepaper sdk rfp financial`
+
+### Economic use threshold documented
+AION is not economically advantageous for documents under ~3 pages (~500 tokens).
+For short documents, structural overhead exceeds natural language savings.
+This threshold is now normative in spec section 20.
+
+### SKILL.md compressed
+Skill token count reduced from ~8,700 to ~3,750 (57% reduction).
+Session overhead (producer + consumer): 17,400 → 7,500 tokens.
+
+---
+
+
 
 File headers remain `v=3`. All v3 constructs are valid in v3.1.
 v3.1 consumers MUST also accept all v3 syntax.
