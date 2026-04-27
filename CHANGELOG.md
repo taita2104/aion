@@ -55,8 +55,7 @@ Skill token count reduced from ~8,700 to ~3,750 (57% reduction).
 Session overhead (producer + consumer): 17,400 → 7,500 tokens.
 
 ---
-
-
+## [3.1] 20260427 — Additive improvements, no breaking changes
 
 File headers remain `v=3`. All v3 constructs are valid in v3.1.
 v3.1 consumers MUST also accept all v3 syntax.
