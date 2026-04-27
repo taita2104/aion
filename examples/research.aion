@@ -1,0 +1,48 @@
+# source: llm-efficiency-study-2026.pdf | lang: en | pages: 28
+AION v=2 dt=260301 type=research lang=en src=study-2026-llm.pdf cf=0.91
+
+E[study] t=concept n=llm-efficiency-2026
+E[team] t=org n=ai-research-group
+E[grp-ctrl] t=concept n=control-group
+E[grp-int] t=concept n=intervention-group
+E[grp-sr] t=concept n=subgroup-senior
+E[grp-jr] t=concept n=subgroup-junior
+---
+Q[n] =1240 u n=sample-size
+Q[period] =6 mo
+Q[eff-main] ~=32 pct n=efficiency-gain-intervention
+Q[eff-sr] ~=41 pct n=efficiency-gain-senior
+Q[eff-jr] ~=21 pct n=efficiency-gain-junior
+Q[p-val] =0.003 u n=significance
+
+S[methodology] t=methodology
+F[m1] t=desc E[study] method=rct
+F[m2] t=desc E[study] +[Q[n],Q[period]] parts=[E[grp-ctrl],E[grp-int]]
+
+S[results] t=results
+F[f1] t=find cf=0.96 >>Q[eff-main]
+<<<
+E[grp-int]: Q[eff-main] vs E[grp-ctrl]
+Q[p-val] < 0.05 => C[sig]
+C[sig]: result=statistically-significant
+>>>
+F[f2] t=find cf=0.88
+<<<
+E[grp-sr] => Q[eff-sr]
+E[grp-jr] => Q[eff-jr]
+>>>
+F[f3] t=warn cf=0.72
+<<<
+C[conf-1] E[study] ? selection-bias
+C[conf-2] E[study] ? self-report-bias
+>>>
+
+S[conclusion] t=conclusion
+F[c1] t=concl >>F[f1] cf=0.94
+F[c2] t=concl >>F[f2] cf=0.85
+F[lim] t=warn >>F[f3] n=generalizability-limited
+
+S[next-steps] t=next-steps
+K[k1] t=recommend n=replication-study @<270101 ~
+K[k2] t=recommend n=larger-n >>F[lim] ~
+K[k3] t=recommend n=double-blind-protocol >>F[f3] ~

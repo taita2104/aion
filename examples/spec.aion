@@ -1,0 +1,47 @@
+# source: api-specification-v3.md | lang: en
+AION v=2 dt=260415 type=spec lang=en src=api-spec-v3.md
+
+E[api] t=system v=3 by=backend-team
+E[client] t=system
+E[db] t=system n=postgres-15
+E[auth] t=concept n=jwt-auth
+---
+Q[uptime] =99.9 pct
+Q[latency-p99] =500 u n=ms
+Q[rate-limit] =1000 r *d
+Q[pool] =20 u n=connections
+Q[timeout] =30 u n=seconds
+
+S[requirements] t=scope
+F[r1] t=req E[api] p=1
+<<<
+E[client]>E[api]: auth=E[auth] ! @<500ms
+E[api]>E[client]: format=json !
+E[api]/expose plaintext-credentials
+>>>
+F[r2] t=req E[api] p=1
+<<<
+E[api]>E[db]: pool=Q[pool] timeout=Q[timeout] !
+E[api] rate-limit=Q[rate-limit] *E[client] !
+E[api] => X[429] trigger=rate-exceeded
+>>>
+F[r3] t=req E[api] p=2
+<<<
+E[api] log=all-requests ! retain=+90d
+E[api]/log payload-body
+>>>
+
+S[constraints] t=scope
+C[c1] E[api] deploy=container !
+C[c2] E[api] lang=[python,go] ~
+C[c3] E[db] / expose=public !
+C[c4] E[api] uptime>=Q[uptime] !
+
+S[nonfunctional] t=scope
+F[nf1] t=req latency-p99<Q[latency-p99] !
+F[nf2] t=req storage=Q[storage] ~ n=initial-allocation
+
+S[actions] t=next-steps
+K[k1] by=backend-team t=review F[r1] @<260422 ! s=0
+K[k2] by=arch t=approve @<260425 ! s=0 >>K[k1]
+K[k3] by=devops t=deploy E[api] @<260501 ~ s=0 >>K[k2]

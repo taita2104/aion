@@ -1,0 +1,34 @@
+# source: INV-2026-042.pdf | lang: it
+AION v=2 dt=260430 type=invoice lang=it src=INV-2026-042.pdf
+
+E[beta] t=org role=supplier vat=IT12345678901 email=admin@beta.com
+E[acme] t=org role=client vat=IT98765432100
+E[inv] t=file n=INV-2026-042
+E[svc-1] t=concept n=sviluppo-modulo-A
+E[svc-2] t=concept n=consulenza-architetturale
+---
+Q[svc1-h] =40 h
+Q[svc1-rate] =150 EUR *u
+Q[svc1-tot] =6000 EUR
+Q[svc2-h] =8 h
+Q[svc2-rate] =250 EUR *u
+Q[svc2-tot] =2000 EUR
+Q[subtotal] =8000 EUR
+Q[vat-pct] =22 pct
+Q[vat-amt] =1760 EUR
+Q[total] =9760 EUR
+Q[due] =30 dw
+
+F[f1] t=desc E[beta]>E[acme]
+<<<
+E[svc-1]: Q[svc1-h] * Q[svc1-rate] = Q[svc1-tot]
+E[svc-2]: Q[svc2-h] * Q[svc2-rate] = Q[svc2-tot]
+Q[subtotal] = Q[svc1-tot] + Q[svc2-tot]
+Q[vat-amt] = Q[subtotal] * Q[vat-pct]
+Q[total] = Q[subtotal] + Q[vat-amt]
+>>>
+
+C[pay] E[acme]>Q[total] E[beta] @<+30dw ! method=bank-transfer
+C[late] trigger=timeout => penalty=2pct *mo E[acme]>E[beta]
+
+K[k1] by=acme t=pay Q[total] @<260530 ! s=0

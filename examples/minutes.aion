@@ -1,0 +1,34 @@
+# source: sprint-7-standup-260420 | lang: en
+AION v=2 dt=260420 type=minutes lang=en src=standup-260420.txt
+
+E[alice] t=person role=pm
+E[bob] t=person role=dev
+E[carol] t=person role=qa
+E[sprint-7] t=concept @<260430
+E[sprint-8] t=concept @>260501
+E[feat-auth] t=concept s=2
+E[feat-x] t=concept s=6
+---
+S[decisions] t=results
+F[d1] t=claim E[sprint-7] s=2
+<<<
+E[feat-x] => S[sprint-8]
+C[d1a]: E[sprint-7] deadline=unchanged @=260430
+E[alice]<>E[bob]: agreed
+>>>
+F[d2] t=claim by=carol
+<<<
+E[carol] +regression-suite E[sprint-7] @<260425
+>>>
+
+S[actions] t=next-steps
+K[k1] by=bob t=implement E[feat-auth] @<260424 ! s=2
+K[k2] by=carol t=test E[feat-auth] @<260426 ! s=0 >>K[k1]
+K[k3] by=alice t=update E[roadmap] @<260422 ~ s=0
+
+S[risks] t=risk
+F[r1] t=warn K[k1] ? delay p=1
+<<<
+C[r1a]: K[k1] delay => K[k2].s=7
+C[r1b]: K[k2].s=7 => E[sprint-7].s=7
+>>>
