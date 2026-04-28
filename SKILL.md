@@ -3,7 +3,7 @@ name: aion
 description: >
   AION (AI Interop Object Notation) is a shared communication protocol for AI-to-AI pipelines.
   Load this skill into the system prompt of every AI agent in a pipeline where one AI produces
-  structured output that another AI consumes — without any human reading it in between.
+  structured output that another AI consumes - without any human reading it in between.
   Use AION whenever you are acting as a producer (generating structured output for a downstream AI)
   or as a consumer (receiving and interpreting AION-formatted input from an upstream AI).
   Also use when a human asks you to generate a .aion file as a semantic digest of a document
@@ -60,7 +60,7 @@ combinators: &  and    |  or    ||  parallel    (max one nesting level)
 
 ## DATES
 
-`YYYYMMDD  HHMM  YYYYMMDD.HHMM  +Nd  +Ndw  +Nmo` — relative to header `dt=`.
+`YYYYMMDD  HHMM  YYYYMMDD.HHMM  +Nd  +Ndw  +Nmo` - relative to header `dt=`.
 
 ## QUANTITIES
 
@@ -95,7 +95,7 @@ Use extended props over freestyle synonyms for inter-producer consistency.
 ```
 RECORD
 <<<
-AION content — operators and identifiers only
+AION content - operators and identifiers only
 RAW
 verbatim multi-line text, opaque, ends at >>>
 CMP
@@ -112,13 +112,13 @@ Opener: `CMP` inside `<<<` block. Rules:
 
 1. Drop articles, prepositions, auxiliary verbs, redundant punctuation
 2. Multi-word concepts → hyphenated-token
-3. Lists → item|item|item — never commas
+3. Lists → item|item|item - never commas
 4. Sequences → step1 → step2 → step3
 5. Key-value → key:value
-6. Quantities inline: 50pct 3h 2km — never prose (not "50 percento", not "tre ore")
-7. Entity references: E[id] mandatory — never prose name
+6. Quantities inline: 50pct 3h 2km - never prose (not "50 percento", not "tre ore")
+7. Entity references: E[id] mandatory - never prose name
 
-WRONG — prose in RAW when CMP applies:
+WRONG - prose in RAW when CMP applies:
 <<<
 RAW
 The system must verify the identity of the user before granting access to the resource.
@@ -168,12 +168,12 @@ K[a] -> (K[b] || K[c]) -> K[d] # sequence with parallel block
 
 ## MULTI-DEPENDENCY
 
-`F[c] >>[F[a],F[b]]` — c follows from A and B together.
-`F[c] >>F[a] | >>F[b]` — c follows from A or B.
+`F[c] >>[F[a],F[b]]` - c follows from A and B together.
+`F[c] >>F[a] | >>F[b]` - c follows from A or B.
 
 ## SECTION
 
-`S[id] t=SUBTYPE [+[ids]]` — explicit `+[ids]` authoritative; else positional. Do not mix.
+`S[id] t=SUBTYPE [+[ids]]` - explicit `+[ids]` authoritative; else positional. Do not mix.
 
 ## LINK
 
@@ -192,7 +192,7 @@ Additive only. Cannot define new primitive codes or operators.
 
 ## DELTA
 
-`DELTA TYPE[id] prop=val ...` — merges listed props, preserves rest.
+`DELTA TYPE[id] prop=val ...` - merges listed props, preserves rest.
 
 ## ERRORS
 
@@ -220,14 +220,14 @@ research plan form audit press whitepaper sdk rfp financial doc
    La consegna avviene quando il fornitore trasferisce il prodotto al cliente.
    >>>
 
-   RIGHT — free text requires RAW:
+   RIGHT - free text requires RAW:
    F[f1] t=def n=consegna
    <<<
    RAW
    La consegna avviene quando il fornitore trasferisce il prodotto al cliente.
    >>>
 
-   RIGHT — pure AION inside <<<, no RAW needed:
+   RIGHT - pure AION inside <<<, no RAW needed:
    C[c1] E[b]>E[mvp] @<20261001 !
    <<<
    E[a]~ack @<+15dw | (timeout => E[mvp].s=4)

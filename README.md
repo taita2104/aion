@@ -1,4 +1,4 @@
-# AION — AI Interop Object Notation
+# AION - AI Interop Object Notation
 
 **An unambiguous language for AI-to-AI document exchange.**
 
@@ -104,7 +104,7 @@ Both AIs load the same `SKILL.md`. The skill is the contract. No parser, no midd
 ## File structure
 
 ```
-AION v=2 dt=YYMMDD type=TYPE lang=XX
+AION v=3 dt=YYYYMMDD type=TYPE lang=XX
 ---
 SCHEMA          # optional domain extensions
 ---
@@ -121,6 +121,7 @@ C[...] K[...]   # content records with optional <<< >>> blocks
 contract    report      spec        email       minutes
 proposal    policy      invoice     brief       manual
 research    plan        form        audit       press
+whitepaper  sdk         rfp         financial
 ```
 
 Any other: `type=doc`
@@ -157,11 +158,11 @@ Based on this .aion file, what are the payment obligations and deadlines?
 
 See the [`examples/`](examples/) directory for complete `.aion` files across document types:
 
-- [`contract.aion`](examples/contract.aion) — software development contract
-- [`spec.aion`](examples/spec.aion) — API technical specification
-- [`research.aion`](examples/research.aion) — research report with findings
-- [`minutes.aion`](examples/minutes.aion) — meeting minutes with action items
-- [`invoice.aion`](examples/invoice.aion) — invoice with line items
+- [`contract.aion`](examples/contract.aion) - software development contract
+- [`spec.aion`](examples/spec.aion) - API technical specification
+- [`research.aion`](examples/research.aion) - research report with findings
+- [`minutes.aion`](examples/minutes.aion) - meeting minutes with action items
+- [`invoice.aion`](examples/invoice.aion) - invoice with line items
 
 ---
 
@@ -180,6 +181,34 @@ AION uses integer versions. The current version is **3**.
 Every `.aion` file declares its version in the header (`v=3`). Consumers that encounter an unsupported version emit `X field=v reason=unsupported got=N expected=3` and halt.
 
 Breaking changes increment the version. Additive changes (new subtypes, new document classes) do not.
+
+---
+
+## The Vision
+
+Documents exist because humans need to exchange meaning. Contracts, medical records, technical specifications, meeting minutes: all are attempts to encode intent, obligation, and fact in a medium another human can read and interpret.
+
+Natural language was the only option. It no longer is.
+
+When both parties to a document exchange use an AI to read it, the document no longer needs to be written for humans. It needs to be written for machines: unambiguously, verifiably, without the redundancy that natural language requires to compensate for the imprecision of human interpretation.
+
+A 40-page contract is long not because it contains 40 pages of substance, but because it must anticipate every possible misreading by every possible human reader. It defines terms both parties already understand. It repeats obligations in multiple forms to ensure at least one formulation lands unambiguously. It includes boilerplate no one reads but everyone includes because omitting it creates risk.
+
+The semantic content of that contract fits in roughly 80 tokens of AION. The rest is defensive redundancy against ambiguity.
+
+If both parties use an AI that loads the same `SKILL.md`, that redundancy becomes unnecessary. Conditions are `C[id]`. Deadlines are `@<YYYYMMDD !`. Penalties are `pen=5000EUR*d`. There is no room for divergent interpretation because there is no natural language.
+
+The same applies across professional documents:
+
+- **Medical records** - structured with `ep=`, `cf=`, explicit dependencies between diagnoses and treatments. An AI reasons on the full clinical history without loss of meaning between practitioners or systems.
+- **Technical specifications** - requirements as `F[id] t=req wt=` with explicit dependencies, automatically verifiable against implementation.
+- **Meeting minutes** - generated during the meeting. Actions are `K[id] by= @< !`. Decisions are `F[id] t=concl ep=estab`. Shared immediately as `.aion`.
+
+The technical foundation exists today. The remaining barrier is institutional: legal and regulatory systems built around human readability as the guarantee of transparency.
+
+That argument inverts under AION. A formal, machine-readable document is *more* verifiable than prose - `ep=`, `cf=`, `>>` dependencies, and `valid=` ranges are checkable in ways that a paragraph of contractual language is not.
+
+When formal verifiability is recognized as a stronger guarantee than human readability, the document as we know it changes. Not because the substance changes, but because the ceremony around it finally falls away.
 
 ---
 

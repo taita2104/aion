@@ -1,11 +1,10 @@
-# AION v3 — Formal Specification (rev. 3.1)
+# AION v3 - Formal Specification (rev. 3.3.1)
 
 This document is the authoritative reference for AION v3.
 `SKILL.md` in the repository root is the deployable subset optimized for AI system prompts.
 When the two conflict, this document takes precedence.
 
-> **Revision 3.1** is fully backward compatible with v3. File headers continue to declare `v=3`.
-> Consumers conforming to v3.1 MUST also accept all valid v3 constructs.
+> **Revision 3.3.1** is fully backward compatible with v3, v3.1, v3.2, v3.3. File headers continue to declare `v=3`.
 
 ---
 
@@ -51,17 +50,11 @@ The unit of exchange is the `.aion` file: a plain-text semantic digest of a sour
 ## 3.1 Changes in revision 3.1 (additive only)
 
 All changes in this revision are backward compatible. File headers remain `v=3`.
-v3.1 consumers MUST accept all v3 syntax in addition to the new forms below.
 
 ### 3.1.1 `neg` flag shorthand
 
 `neg` as a standalone property flag is equivalent to `neg=1`.
 Producers SHOULD prefer `neg`. Consumers MUST accept both.
-
-```
-F[f1] t=claim neg n=warranty-excluded        # preferred
-F[f1] t=claim neg=1 n=warranty-excluded      # also valid
-```
 
 ### 3.1.2 Inline quantities
 
@@ -73,32 +66,16 @@ K[k1] E[acme]>20000EUR E[beta] @<20260515 !
 C[r1] pen=5000EUR*d
 ```
 
-Producers SHOULD use declared `Q[id]` records when the same value appears in two or more records.
-Producers SHOULD use inline quantities for single-use values and TMPL instances.
-
 ### 3.1.3 TMPL positional syntax
 
 TMPL instances may use positional values instead of named `field=val` pairs.
-Field positions follow the order declared in `fields=`.
-A TMPL declaration may use typed fields with `:UNIT` annotation.
 
 ```
 TMPL[line] fields=[item,h:h,rate:EUR,total:EUR]
-
-# positional (v3.1 preferred for dense tables)
 line[l1] E[svc-1] 40 150 6000
-
-# named (v3 compat, still valid)
-line[l1] item=E[svc-1] h=40h rate=EUR150 total=EUR6000
 ```
 
-Mixed syntax within the same TMPL (some rows named, some positional) is not permitted.
-Consumers determine the mode from the first instance row encountered.
-
 ### 3.1.4 Extended standard properties
-
-Standard short-name properties for domain-frequent concepts.
-Producers SHOULD prefer these over freestyle synonyms.
 
 | Prop | Meaning | Example |
 |------|---------|---------|
@@ -118,88 +95,16 @@ Producers SHOULD prefer these over freestyle synonyms.
 ## 3.2 Changes in revision 3.2 (additive only)
 
 All changes in this revision are backward compatible. File headers remain `v=3`.
-v3.2 consumers MUST also accept all v3 and v3.1 syntax.
 
 ### 3.2.1 Multi-source dependency `>>[A,B]`
 
-`>>` becomes variadic. A record may declare dependency on multiple sources simultaneously.
-
-```
-F[c] >>[F[a],F[b]]          # c follows from A and B together (conjunction)
-F[c] >>F[a] | >>F[b]        # c follows from A or B (use | combinator)
-```
-
-Single-source `>>F[a]` remains valid. `>>[A]` with one element is equivalent.
-
-### 3.2.2 Parallel operator `||`
-
-Encodes concurrent / parallel execution. Distinct from `->` (sequence) and `>>` (dependency).
-
-```
-K[b] || K[c]                     # b and c execute concurrently
-K[a] -> (K[b] || K[c]) -> K[d]  # sequence with parallel block
-```
-
-Parentheses group parallel sets. Maximum one level of nesting.
-
-### 3.2.3 Quantity range `=MIN..MAX`
-
-Any `Q` record or inline quantity may declare a range instead of a single value.
-
-```
-Q[latency] =50..500 u n=ms
-Q[guidance] =52000000..58000000 EUR
-F[f1] t=claim cf=0.85 >>[Q[eff-a],Q[baseline]]
-<<<
-Q[eff-a] =28..36 pct cf=0.88
->>>
-```
-
-Inline range: `50..500u` `28..36pct`
-
-### 3.2.4 Comparison properties `vs=` and `d=`
-
-`vs=` references a comparison baseline. `d=` encodes the delta value.
-Both apply to `Q` records and inline quantities.
-
-```
-Q[rev-25] =48200000 EUR vs=Q[rev-24] d=+16.7pct
-Q[err-rate] ~=2.3 pct vs=Q[err-baseline] d=-0.8pct
-```
-
-### 3.2.5 Weight property `wt=`
-
-Numeric weight 0-100 for requirements, evaluation criteria, risk factors, decisions.
-
-```
-F[r1] t=req wt=40 n=security
-F[r2] t=req wt=15 n=scalability
-```
-
-`wt=` is independent from `p=`. Priority `p=` is ordinal (1/2/3); weight `wt=` is numeric.
-
-### 3.2.6 Document class vocabulary additions
-
-Added to `type=` recognized values: `whitepaper sdk rfp financial`
-
----
-
----
-
-## 3.2 Changes in revision 3.2 (additive only)
-
-File headers remain `v=3`. All v3 and v3.1 syntax remains valid.
-
-### 3.2.1 Multi-source dependency `>>[A,B]`
-
-`>>` extended to accept a list of sources. `F[c] >>[F[a],F[b]]` means c follows from A and B together.
+`>>` becomes variadic. `F[c] >>[F[a],F[b]]` means c follows from A and B together.
 `F[c] >>F[a] | >>F[b]` means c follows from A or B. Single-source `>>F[a]` unchanged.
 
 ### 3.2.2 Weight property `wt=`
 
-Numeric weight 0–100 on any record. Replaces `p=` when cardinal (not ordinal) weight is needed.
-`F[r1] t=req wt=40` — requirement weighted at 40/100.
-`p=` (1/2/3 ordinal) and `wt=` (0–100 cardinal) are independent; both may appear.
+Numeric weight 0-100 on any record. `F[r1] t=req wt=40` - requirement weighted at 40/100.
+`p=` (1/2/3 ordinal) and `wt=` (0-100 cardinal) are independent; both may appear.
 
 ### 3.2.3 Comparison properties `vs=` and `d=`
 
@@ -215,29 +120,18 @@ Q values may declare a range with `..`:
 ```
 Q[guidance] =52000000..58000000 EUR
 Q[latency]  =50..500 u n=ms
-Q[temp]     =36.5..37.5 C
 ```
-Lower bound is inclusive. Upper bound is inclusive. Both must share the same unit.
 
 ### 3.2.5 Parallel operator `||`
 
-For concurrent tasks or simultaneous events in a sequence chain:
 ```
 K[b] || K[c]                    # b and c are concurrent
 K[a] -> (K[b] || K[c]) -> K[d] # sequence with parallel block
 ```
-`||` is only valid in `->` chains and `<<<` blocks. Not valid as a standalone record.
 
 ### 3.2.6 New document classes
 
 Added to `type=` vocabulary: `whitepaper sdk rfp financial`
-
-### 3.2.7 SKILL.md rewritten for token efficiency
-
-The deployable `SKILL.md` was rewritten from ~4374 tokens (spec-format) to ~1511 tokens (compact-format).
-All normative content preserved. Tables replaced with compact inline notation.
-Examples reduced to one minimal illustrative example; full examples remain in `examples/`.
-Per-session saving for a two-agent pipeline: ~5725 tokens.
 
 ---
 
@@ -260,19 +154,7 @@ Applies to `F` records. Encodes the epistemic standing of the assertion.
 | `disput` | explicitly contested; use `src=` to identify the contesting party |
 | `refut` | refutes another record; use `>>` to identify the target |
 
-```
-F[f1] t=find  ep=evid  cf=0.96
-F[f2] t=find  ep=corr  cf=0.81
-F[f3] t=concl ep=estab cf=1.0
-F[f4] t=claim ep=disput src=E[party-b]
-F[f5] t=find  ep=refut >>F[f2]
-```
-
-`ep=` is optional. Omit when epistemic status is not meaningful or not determinable.
-
 ### 3.3.2 F subtype additions: `corr`, `evid`, `refut`
-
-Three new `F.t=` subtypes to distinguish argumentative force.
 
 | Subtype | Meaning |
 |---------|---------|
@@ -280,59 +162,58 @@ Three new `F.t=` subtypes to distinguish argumentative force.
 | `evid` | empirical evidence supporting a claim |
 | `refut` | refutation of another record |
 
-These complement the existing `find` (general finding) and `concl` (conclusion).
-`ep=` and `t=` are independent and may be combined freely.
-
 ### 3.3.3 Temporal validity property `valid=`
-
-Applies to `C` records and any record with bounded temporal applicability.
-Distinct from `dt=` (record creation date) and `@<`/`@>` (deadline/start operators).
 
 ```
 valid=YYYYMMDD:YYYYMMDD   # applies from date A to date B (inclusive)
-valid=YYYYMMDD:            # applies from date A onward (open-ended)
-valid=:YYYYMMDD            # applies until date B (open-ended start)
-```
-
-Example:
-```
-C[c1] jur=it-civil valid=20260601:20271231   # clause active for 18 months
-C[c2] valid=:20261231                        # only applies until year-end
+valid=YYYYMMDD:            # applies from date A onward
+valid=:YYYYMMDD            # applies until date B
 ```
 
 ### 3.3.4 Digest coverage metadata: `cov=` and `excl=`
-
-Header-level properties declaring how much of the source document is covered.
 
 | Property | Format | Meaning |
 |----------|--------|---------|
 | `cov=` | 0.0-1.0 | fraction of source document semantically covered |
 | `excl=` | `[id,id]` | section names or identifiers intentionally excluded |
 
-```
-AION v=3 dt=20260428 type=contract cf=0.95 cov=0.85 excl=[schedule-b,appendix-c]
-```
-
-`cov=1.0` asserts complete coverage. `cov=` absent means coverage unknown.
-`excl=` helps the consumer AI avoid assuming that absent content is absent from the source.
-
-### 3.3.5 Definition linking convention (producer rule)
+### 3.3.5 Definition linking convention
 
 When a record uses a term defined by an `F[id] t=def` record elsewhere in the file,
-the producer SHOULD add `>>F[def-id]` to make the semantic link explicit and navigable.
+the producer SHOULD add `>>F[def-id]` to make the semantic link explicit.
 
-```
-F[d1] t=def n=delivery-date
-<<<
-RAW
-"Delivery Date" means the date on which E[b] transfers E[mvp] to E[a].
->>>
+---
 
-C[c1] E[b]>E[mvp] @<20261001 ! >>F[d1]   # uses definition F[d1]
-```
+## 3.3.1 Changes in revision 3.3.1 (additive only)
 
-This is a convention, not a structural constraint. Consumers MUST NOT reject records
-that omit `>>F[def-id]` links.
+File headers remain `v=3`. All v3, v3.1, v3.2, v3.3 syntax remains valid.
+
+### PRODUCER MUST rule 4 strengthened
+
+Explicit prohibition on natural language inside `<<<` blocks without `RAW` opener.
+Wrong/right examples added inline to prevent producer non-conformance on dense technical content.
+
+### CMP sub-block
+
+`CMP` opens a compressed prose region inside `<<<` blocks. Preserves meaning with
+~60-70% token reduction. Use instead of RAW whenever verbatim reproduction is not required.
+
+### PRODUCER MUST rules 15-16
+
+Guidance on choosing TMPL / AION / CMP / RAW by content structure.
+
+### CONSUMER MUST rule 13
+
+CMP interpretation rules including entity and quantity inverse mapping.
+
+### Section 20 rewritten
+
+Separates data-exchange use case (non-ambiguity, interoperability) from internal
+digest use case (token efficiency). Content composition threshold added.
+
+### Section 22 added
+
+The Vision: future of professional document exchange without natural language ceremony.
 
 ---
 
@@ -379,12 +260,10 @@ END
 
 `SCHEMA` adds subtypes to existing primitives only.
 It cannot define new primitive codes, operators, or properties.
-All `SCHEMA` declarations use `=` as separator.
 
 ### 4.3 Entities (optional but recommended)
 
 `E` records before content improve navigation for the consumer.
-`E` records may also appear anywhere in the content section.
 
 ### 4.4 Content
 
@@ -411,6 +290,10 @@ All other records in any order.
 | `form` | Structured form |
 | `audit` | Audit or compliance document |
 | `press` | Press release |
+| `whitepaper` | White paper |
+| `sdk` | SDK or developer documentation |
+| `rfp` | Request for proposal |
+| `financial` | Financial document |
 | `doc` | Generic / unclassified |
 
 ---
@@ -425,32 +308,21 @@ TYPE[id] prop=val prop=val OPERATOR TARGET ...
 - `[id]`: unique across the entire file regardless of type; chars `a-z A-Z 0-9 - .`
 - `prop=val`: space-separated, order-independent
 - Records separated by blank line or `---`
-- Continuation: leading whitespace on subsequent lines
 - Anonymous records (no `[id]`): allowed; cannot be referenced
 
 ---
 
 ## 7. Primitive types
 
-### 7.1 E — Entity
+### 7.1 E - Entity
 
 Subtypes (`t=`): `person org system place product file concept role event`
 
-Properties beyond common set:
+### 7.2 F - Fact
 
-| Prop | Meaning |
-|------|---------|
-| `role=` | functional role |
-| `by=` | parent entity id |
-| `sector=` | industry or domain |
-| `vat=` | tax identifier |
-| `email=` | contact email |
+Subtypes (`t=`): `find concl desc req claim def warn note quote corr evid refut`
 
-### 7.2 F — Fact
-
-Subtypes (`t=`): `find concl desc req claim def warn note quote`
-
-### 7.3 Q — Quantity
+### 7.3 Q - Quantity
 
 ```
 Q[id] =VALUE UNIT *FREQ
@@ -471,12 +343,12 @@ Standard units:
 
 Frequency modifiers: `*d *mo *yr *u`
 
-### 7.4 K — Action
+### 7.4 K - Action
 
 Subtypes (`t=`): `sign approve review test deploy notify recommend`
 Modal operators apply: `!` `~` `/`
 
-### 7.5 C — Condition
+### 7.5 C - Condition
 
 If-then logic, constraints, rules, obligations, permissions.
 
@@ -488,7 +360,7 @@ C[id] E[actor] MODAL OBJECT @<DEADLINE
 Logical combinators `&` and `|` are permitted inside `C` records and `<<<` blocks.
 Parentheses `()` group sub-expressions. Maximum one level of nesting.
 
-### 7.6 S — Section
+### 7.6 S - Section
 
 ```
 S[id] t=SUBTYPE +[RECORD_IDS]
@@ -496,7 +368,7 @@ S[id] t=SUBTYPE +[RECORD_IDS]
 
 If `+[...]` is present: authoritative for membership.
 If `+[...]` is absent: membership by physical position until next `S` or `---`.
-Mixing both modes in the same file is forbidden; emit `X` if detected.
+Mixing both modes in the same file is forbidden.
 
 Subtypes:
 ```
@@ -504,7 +376,7 @@ introduction background scope methodology results analysis
 conclusion recommendation appendix next-steps risk financial
 ```
 
-### 7.7 L — Link
+### 7.7 L - Link
 
 ```
 L[id] >TARGET t=TYPE n=LABEL
@@ -513,7 +385,7 @@ L[id] >TARGET t=TYPE n=LABEL
 Targets: `>https://...` | `>TYPE[id]` | `>DOC:IDENTIFIER`
 Types: `cite ref attach replaces supersedes see-also`
 
-### 7.8 X — Error
+### 7.8 X - Error
 
 ```
 X src=RECORD field=FIELD reason=REASON got=VAL expected=EXPECTED
@@ -544,12 +416,6 @@ Reasons: `missing unknown-type undeclared-subtype invalid-value parse-fail unsup
 
 `>>` (logical dependency) and `->` (sequence) are not interchangeable.
 
-`->` may form chains: `K[a] -> K[b] -> K[c]`
-Direction: left precedes right.
-
-`~=` is a compound relational operator. `~` standalone is a modal.
-They are syntactically unambiguous: `~=` always has operands on both sides.
-
 ### 8.2 Temporal
 
 | Op | Meaning |
@@ -577,35 +443,19 @@ They are syntactically unambiguous: `~=` always has operands on both sides.
 | `&` | C records, blocks | AND |
 | `\|` | C records, blocks | OR |
 
-Not permitted in record property values or outside conditions.
-
 ---
 
 ## 9. Negation
 
-Any record may carry a negation marker to assert that the source document
-explicitly states its content as false, excluded, or inapplicable.
-
-Two equivalent forms (v3.1):
+Two equivalent forms:
 - `neg` as a standalone flag (preferred)
 - `neg=1` as a property (v3 compat, still valid)
 
 Consumers MUST accept both forms.
 
-```
-F[f1] t=claim neg n=warranty-excluded
-C[c1] neg n=jurisdiction-clause-inapplicable
-```
-
-Without negation, the record asserts its content as true.
-With negation, it asserts the contrary.
-`neg` has no effect on `X` (error) records.
-
 ---
 
 ## 10. Date and time
-
-All dates use 4-digit year.
 
 | Format | Meaning |
 |--------|---------|
@@ -627,7 +477,7 @@ AION content
 >>>
 ```
 
-One block per record. Block content: AION operators and identifiers only.
+One block per record.
 
 ### 11.1 RAW sub-block
 
@@ -655,14 +505,14 @@ Use instead of RAW whenever the text does not need to be reproduced verbatim.
 Compression rules:
 1. Drop articles, prepositions, auxiliary verbs, redundant punctuation
 2. Multi-word concepts → hyphenated-token
-3. Lists → `item|item|item` — never commas
+3. Lists → `item|item|item` - never commas
 4. Sequences → `step1 → step2 → step3`
 5. Key-value → `key:value`
-6. Quantities inline: `50pct` `3h` `2km` — never prose ("50 percento", "tre ore")
-7. Entity references: `E[id]` mandatory — never prose name
+6. Quantities inline: `50pct` `3h` `2km` - never prose ("50 percento", "tre ore")
+7. Entity references: `E[id]` mandatory - never prose name
 
 Consumer interpretation: apply inverse rules to reconstruct meaning.
-CMP is not a lossless encoding — minor stylistic detail may be dropped.
+CMP is not a lossless encoding - minor stylistic detail may be dropped.
 Semantic content must be fully preserved.
 Inverse rules: hyphenated-token → multi-word concept, item|item → list,
 step → step sequence, key:value → key-value pair,
@@ -690,27 +540,18 @@ Producer MUST use RAW (not CMP) for verbatim text: legal clauses, quotations, ci
 
 ```
 TMPL[id] fields=[f1,f2,f3]
-id[row-id] f1=val f2=val f3=val
 ```
 
 - Instances use the `TMPL[id]` name as their type
 - **Named syntax**: fields are `name=val` pairs, order-independent (v3 compat)
 - **Positional syntax**: values in declaration order, no field names (v3.1, preferred for tables)
 - Mixed syntax within the same TMPL is forbidden
-- Consumers determine mode from the first instance row
-
-Typed field declarations (v3.1): `fields=[name:unit, ...]`
 
 ```
 TMPL[obs] fields=[subject,value:pct,period:mo,cf:0-1]
 obs[o1] E[grp-int] 32 6 0.96
 obs[o2] E[grp-sr]  41 6 0.88
 ```
-
-- Field values: AION record references (`E[id]`, `Q[id]`), inline quantities, or literals
-- Anonymous instances allowed (id omitted)
-- A consumer encountering an unknown 2-letter type MUST check `TMPL` declarations
-  before emitting `X type=unknown`
 
 ---
 
@@ -721,7 +562,6 @@ DELTA TYPE[id] prop=val prop=val
 ```
 
 Merges listed properties. Unlisted properties unchanged.
-`DELTA` on non-existent `[id]`: emit `X reason=missing`.
 
 ---
 
@@ -729,18 +569,18 @@ Merges listed properties. Unlisted properties unchanged.
 
 | Prop | Meaning | Default |
 |------|---------|---------|
-| `t=` | subtype | — |
+| `t=` | subtype | (none) |
 | `s=` | status | `0` (must omit) |
 | `p=` | priority | `2` (must omit) |
-| `v=` | version | — |
-| `to=` | destination | — |
-| `fr=` | source | — |
-| `cf=` | record-level confidence | — |
-| `n=` | human label or annotation | — |
-| `dt=` | date | — |
-| `by=` | responsible entity | — |
-| `tags=` | label list | — |
-| `neg` | negated assertion — standalone flag or `neg=1`, both accepted | — |
+| `v=` | version | (none) |
+| `to=` | destination | (none) |
+| `fr=` | source | (none) |
+| `cf=` | record-level confidence | (none) |
+| `n=` | human label or annotation | (none) |
+| `dt=` | date | (none) |
+| `by=` | responsible entity | (none) |
+| `tags=` | label list | (none) |
+| `neg` | negated assertion - standalone flag or `neg=1`, both accepted | (none) |
 
 ---
 
@@ -775,7 +615,7 @@ MUST:
    >>>
    ```
 
-   Conforming — free text requires `RAW`:
+   Conforming - free text requires `RAW`:
    ```
    F[f1] t=def n=consegna
    <<<
@@ -784,7 +624,7 @@ MUST:
    >>>
    ```
 
-   Conforming — pure AION inside `<<<`, no `RAW` needed:
+   Conforming - pure AION inside `<<<`, no `RAW` needed:
    ```
    C[c1] E[b]>E[mvp] @<20261001 !
    <<<
@@ -795,15 +635,23 @@ MUST:
 6. Declare custom subtypes in `SCHEMA` before first use
 7. Add `cf=` to records whose content is probabilistic
 8. Use `->` for sequence, `>>` for logical dependency
+9. Choose block content by structure:
+   - Tabular/repeated structure → TMPL
+   - Operators, dependencies, conditions → AION pure inside `<<<`
+   - Compressible prose → CMP
+   - Verbatim text (legal clauses, quotations, citations) → RAW
+   RAW is last resort. Default to TMPL, AION, or CMP.
+10. Prefer CMP over RAW for compressible prose. Use RAW only for verbatim text
+    that must be reproduced exactly.
 
 SHOULD:
 1. Place `E` declarations before content
 2. Use `S` to mirror source document structure
 3. Include `dt=`, `lang=`, `type=` in header
-4. Prefer `neg` flag over `neg=1` (v3.1)
-5. Use inline quantities for single-use values (v3.1)
-6. Use positional TMPL syntax for dense tabular data (v3.1)
-7. Use extended standard properties (`jur=` `ven=` `pen=` `cnd=` `mth=`) over freestyle synonyms (v3.1)
+4. Prefer `neg` flag over `neg=1`
+5. Use inline quantities for single-use values
+6. Use positional TMPL syntax for dense tabular data
+7. Use extended standard properties (`jur=` `ven=` `pen=` `cnd=` `mth=`) over freestyle synonyms
 
 ---
 
@@ -819,9 +667,13 @@ MUST:
 7. `RAW` block: treat all lines until `>>>` as opaque string
 8. Propagate `fr=` when forwarding downstream
 9. Version mismatch: emit `X field=v reason=unsupported`, halt
-10. Accept both `neg` and `neg=1` as equivalent (v3.1)
-11. Accept both named and positional TMPL instance syntax (v3.1)
-12. Accept inline quantities (`20000EUR`, `2pct*d`) wherever `Q[id]` is valid (v3.1)
+10. Accept both `neg` and `neg=1` as equivalent
+11. Accept both named and positional TMPL instance syntax
+12. Accept inline quantities (`20000EUR`, `2pct*d`) wherever `Q[id]` is valid
+13. CMP block: interpret compressed tokens as meaning-preserving prose reduction.
+    Apply rules inverse to production: hyphenated-token → multi-word concept,
+    item|item → list, step → step sequence, key:value → key-value pair,
+    E[id] → entity name, inline quantities → natural language quantities.
 
 ---
 
@@ -832,7 +684,7 @@ AION serves two distinct use cases with different cost/benefit profiles.
 ### 20.1 Data exchange between parties
 
 When two parties exchange a document and both use an AI to read it, AION is
-advantageous regardless of document length. The value is not compression — it is:
+advantageous regardless of document length. The value is not compression - it is:
 
 - **Non-ambiguity**: every construct has exactly one interpretation. Natural language
   leaves dates, obligations, and conditions open to divergent reading by different models.
@@ -882,7 +734,8 @@ For data exchange (20.1), AION retains full value even at high RAW/CMP ratios
 because non-ambiguity is the primary goal. For internal digest use (20.2),
 consider passing the original text directly when RAW/CMP ratio exceeds 60%.
 
--e 
+---
+
 ## 21. Versioning policy
 
 - Current version: **3**
@@ -890,3 +743,68 @@ consider passing the original text directly when RAW/CMP ratio exceeds 60%.
 - Additive changes (new subtypes, new document classes) do not
 - Consumers declare supported versions; multi-version support is permitted
 
+---
+
+## 22. The Vision
+
+Documents exist because humans need to exchange meaning. Contracts, medical records,
+technical specifications, meeting minutes: all of these are attempts to encode
+intent, obligation, and fact in a medium that another human can read and interpret.
+
+Natural language was the only option. It no longer is.
+
+When both parties to a document exchange use an AI to read it, the document no longer
+needs to be written for humans. It needs to be written for machines: unambiguously,
+verifiably, without the redundancy that natural language requires to compensate for
+the imprecision of human interpretation.
+
+AION is a step toward that future.
+
+### Documents without ceremony
+
+A 40-page contract today is long not because it contains 40 pages of substance,
+but because it must anticipate every possible misreading by every possible human reader.
+It defines terms that both parties already understand. It repeats obligations in multiple
+forms to ensure at least one formulation is unambiguous. It includes boilerplate that
+no one reads but everyone includes because not including it creates risk.
+
+The semantic content of a 40-page contract fits in roughly 80 tokens of AION.
+The rest is defensive redundancy against ambiguity.
+
+If both parties use an AI that loads the same `SKILL.md`, that redundancy becomes
+unnecessary. The contract becomes a `.aion` file. Conditions are `C[id]`. Deadlines
+are `@<YYYYMMDD !`. Penalties are `pen=5000EUR*d`. There is no room for divergent
+interpretation because there is no natural language.
+
+### What this enables
+
+**Contracts** - generated, reviewed, and signed in minutes. No legal boilerplate.
+No ambiguous clauses. Obligations, deadlines, and penalties are machine-verifiable
+before signing.
+
+**Medical records** - structured with `ep=`, `cf=`, explicit dependencies between
+diagnoses and treatments, precise timelines. An AI consumer reasons on the full
+clinical history without loss of meaning in translation between practitioners or systems.
+
+**Technical specifications** - requirements as `F[id] t=req wt=` with explicit
+dependencies, automatically verifiable against implementation. No 200-page Word
+documents that engineers read in diagonal.
+
+**Meeting minutes** - generated during the meeting, not after. Actions are `K[id] by=
+@< !`. Decisions are `F[id] t=concl ep=estab`. Shared as `.aion` immediately.
+
+### The missing piece
+
+The technical foundation exists today. The remaining barrier is institutional:
+legal and regulatory systems built around human readability as the guarantee of
+transparency and validity.
+
+The argument for natural language as the standard of record is that any party
+can read it and verify its meaning without specialized tools. AION inverts this:
+a formal, machine-readable document is *more* verifiable than prose, not less.
+`ep=`, `cf=`, `>>` dependencies, and `valid=` ranges are checkable in ways that
+a paragraph of contractual language is not.
+
+When formal verifiability is recognized as a stronger guarantee than human readability,
+the document as we know it changes. Not because the substance changes, but because
+the ceremony around it finally falls away.
