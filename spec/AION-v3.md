@@ -646,6 +646,40 @@ Still verbatim.
 >>>
 ```
 
+### 11.2 CMP sub-block
+
+`CMP` opens a compressed prose region. Preserves meaning with ~60-70% token reduction.
+Use instead of RAW whenever the text does not need to be reproduced verbatim.
+`CMP` must be the last element in the block.
+
+Compression rules:
+1. Drop articles, prepositions, auxiliary verbs, redundant punctuation
+2. Multi-word concepts → hyphenated-token
+3. Lists → `item|item|item`
+4. Sequences → `step1 → step2 → step3`
+5. Key-value → `key:value`
+6. Quantities inline: `50pct` `3h` `2km`
+
+Consumer interpretation: apply inverse rules to reconstruct meaning.
+CMP is not a lossless encoding — minor stylistic detail may be dropped.
+Semantic content must be fully preserved.
+
+```
+F[f1] t=desc
+<<<
+CMP
+phase-1:collect-data → phase-2:validate → phase-3:store-results
+>>>
+
+F[f2] t=warn
+<<<
+CMP
+risk-factors: factor-a|factor-b|factor-c. mitigation ! → escalate-if-unresolved
+>>>
+```
+
+Producer MUST use RAW (not CMP) for verbatim text: legal clauses, quotations, citations.
+
 ---
 
 ## 12. Template records (`TMPL`)
@@ -726,7 +760,33 @@ MUST:
 1. Begin every file with `AION v=3`
 2. Assign unique `[id]` globally to every referenced record
 3. Omit `s=0` and `p=2`
-4. No natural language outside `RAW` blocks
+4. No natural language outside `RAW` blocks. `<<<` blocks contain AION only.
+   Free text inside `<<<` without `RAW` opener = non-conforming output.
+
+   Non-conforming:
+   ```
+   F[f1] t=def n=consegna
+   <<<
+   La consegna avviene quando il fornitore trasferisce il prodotto al cliente.
+   >>>
+   ```
+
+   Conforming — free text requires `RAW`:
+   ```
+   F[f1] t=def n=consegna
+   <<<
+   RAW
+   La consegna avviene quando il fornitore trasferisce il prodotto al cliente.
+   >>>
+   ```
+
+   Conforming — pure AION inside `<<<`, no `RAW` needed:
+   ```
+   C[c1] E[b]>E[mvp] @<20261001 !
+   <<<
+   E[a]~ack @<+15dw | (timeout => E[mvp].s=4)
+   >>>
+   ```
 5. Emit `X` for anomalies detected before sending
 6. Declare custom subtypes in `SCHEMA` before first use
 7. Add `cf=` to records whose content is probabilistic

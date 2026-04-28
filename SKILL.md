@@ -98,10 +98,48 @@ RECORD
 AION content — operators and identifiers only
 RAW
 verbatim multi-line text, opaque, ends at >>>
+CMP
+compressed prose, ends at >>>
 >>>
 ```
 
-One block per record. RAW must be last element in block.
+One block per record. RAW and CMP must be last element in block.
+
+## CMP
+
+Alternative to RAW for compressible prose. Preserves meaning, reduces tokens ~60-70%.
+Opener: `CMP` inside `<<<` block. Rules:
+
+1. Drop articles, prepositions, auxiliary verbs, redundant punctuation
+2. Multi-word concepts → hyphenated-token
+3. Lists → item|item|item
+4. Sequences → step1 → step2 → step3
+5. Key-value → key:value
+6. Quantities inline: 50pct 3h 2km
+
+WRONG — prose in RAW when CMP applies:
+<<<
+RAW
+The system must verify the identity of the user before granting access to the resource.
+>>>
+
+RIGHT:
+<<<
+CMP
+system ! verify user-identity → grant-access
+>>>
+
+WRONG:
+<<<
+RAW
+Phase one: collect data. Phase two: validate. Phase three: store results.
+>>>
+
+RIGHT:
+<<<
+CMP
+phase-1:collect-data → phase-2:validate → phase-3:store-results
+>>>
 
 ## TMPL
 
@@ -172,7 +210,27 @@ research plan form audit press whitepaper sdk rfp financial doc
 1. Header `AION v=3`
 2. Globally unique `[id]` on every referenced record
 3. Omit `s=0` and `p=2`
-4. No natural language outside RAW blocks
+4. No natural language outside RAW blocks. <<< blocks contain AION only.
+   Free text inside <<< without RAW opener = non-conforming output.
+
+   WRONG:
+   F[f1] t=def n=consegna
+   <<<
+   La consegna avviene quando il fornitore trasferisce il prodotto al cliente.
+   >>>
+
+   RIGHT — free text requires RAW:
+   F[f1] t=def n=consegna
+   <<<
+   RAW
+   La consegna avviene quando il fornitore trasferisce il prodotto al cliente.
+   >>>
+
+   RIGHT — pure AION inside <<<, no RAW needed:
+   C[c1] E[b]>E[mvp] @<20261001 !
+   <<<
+   E[a]~ack @<+15dw | (timeout => E[mvp].s=4)
+   >>>
 5. Emit `X` for anomalies before sending
 6. Declare custom subtypes in SCHEMA before first use
 7. `cf=` on probabilistic/inferred records
@@ -183,6 +241,14 @@ research plan form audit press whitepaper sdk rfp financial doc
 12. `ep=` on F records where epistemic status is meaningful
 13. `valid=` on C records with bounded temporal applicability
 14. `>>F[def-id]` on records that use a term defined elsewhere
+15. Choose block content by structure:
+    - Tabular/repeated structure → TMPL
+    - Operators, dependencies, conditions → AION pure inside <<<
+    - Compressible prose → CMP
+    - Verbatim text (legal clauses, quotations, citations) → RAW
+    RAW is last resort. Default to TMPL, AION, or CMP.
+16. Prefer CMP over RAW for compressible prose. Use RAW only for verbatim text
+    that must be reproduced exactly.
 
 ## CONSUMER MUST
 
@@ -198,6 +264,9 @@ research plan form audit press whitepaper sdk rfp financial doc
 10. Accept `neg` and `neg=1` as equivalent
 11. Accept named and positional TMPL syntax
 12. Accept inline quantities anywhere `Q[id]` is valid
+13. CMP block: interpret compressed tokens as meaning-preserving prose reduction.
+    Apply rules inverse to production: hyphenated-token → multi-word concept,
+    item|item → list, step → step sequence, key:value → key-value pair.
 
 ## EXAMPLE
 

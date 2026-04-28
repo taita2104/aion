@@ -8,6 +8,18 @@ Breaking changes are marked **BREAKING**.
 
 ---
 
+## [3.3.1] 20260428
+
+File headers remain `v=3`. No breaking changes.
+
+- PRODUCER MUST rule 4 strengthened: explicit prohibition on natural language inside `<<<` blocks without `RAW` opener
+- Added wrong/right examples inline in rule 4 to prevent producer non-conformance on dense technical content
+- `CMP` sub-block added: compressed prose alternative to `RAW`, ~60-70% token reduction
+- PRODUCER MUST rules 15-16 added: guidance on choosing TMPL / AION / CMP / RAW by content structure
+- CONSUMER MUST rule 13 added: CMP interpretation rules
+
+---
+
 ## [3.3] 20260427
 
 File headers remain `v=3`. All v3/v3.1/v3.2 syntax valid. No breaking changes.
@@ -55,7 +67,8 @@ Skill token count reduced from ~8,700 to ~3,750 (57% reduction).
 Session overhead (producer + consumer): 17,400 → 7,500 tokens.
 
 ---
-## [3.1] 20260427 — Additive improvements, no breaking changes
+
+
 
 File headers remain `v=3`. All v3 constructs are valid in v3.1.
 v3.1 consumers MUST also accept all v3 syntax.
