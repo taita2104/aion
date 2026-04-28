@@ -1,6 +1,6 @@
 # AION — AI Interop Object Notation
 
-**A token-efficient artificial language for AI-to-AI document exchange.**
+**An unambiguous language for AI-to-AI document exchange.**
 
 ---
 
@@ -8,19 +8,34 @@
 
 When two people exchange a document, each may use an AI to read it. The document was written in natural language for humans -- but neither human will actually read it. The AI on one end produces it; the AI on the other end consumes it.
 
-Natural language is expensive for this. It carries grammar, style, redundancy, and ambiguity -- none of which an AI needs. A 40-page contract costs ~8,000 tokens to process. Its semantic content fits in ~80.
+Natural language is a poor medium for this. It carries grammar, style, redundancy, and ambiguity -- none of which an AI needs. Two AI systems from different vendors can read the same clause and reach different conclusions. A 40-page contract costs ~8,000 tokens to process. Its semantic content fits in ~80.
 
 ## The solution
 
 AION is a notation for encoding document semantics without natural language. It is:
 
+- **Unambiguous**: every construct has exactly one interpretation, regardless of which AI reads it
+- **Interoperable**: any two AIs loading the same `SKILL.md` interpret the same file identically
 - **Token-efficient**: no articles, prepositions, conjugations, or filler
-- **Unambiguous**: every construct has exactly one interpretation
 - **Universal**: 7 primitives cover any document type
 - **Zero-infrastructure**: both AIs load the same skill file -- that is the entire contract
 - **Extensible**: domain-specific subtypes via `SCHEMA` without touching the core
 
-A `.aion` file is a semantic digest. It is not a replacement for the original document -- it is what an AI needs to reason about it.
+A `.aion` file is a semantic digest. It is not a replacement for the original document -- it is what an AI needs to reason about it without ambiguity.
+
+---
+
+## When to use AION
+
+### Exchanging documents between parties
+
+When two parties exchange a document and both use an AI to read it, AION is advantageous regardless of document length. The value is non-ambiguity and interoperability, not compression. Different AI systems interpreting the same natural language clause can reach different conclusions. AION eliminates that variance -- the skill is the contract.
+
+Use AION for inter-party exchange even on short documents.
+
+### Internal digest for query sessions
+
+When a single AI uses AION as a compressed digest for internal queries, token efficiency matters. The skill costs ~7,500 tokens to load (producer + consumer combined). This overhead is recovered only on documents long enough to benefit from compression -- roughly 3 pages or more. For shorter documents, pass the original text directly.
 
 ---
 

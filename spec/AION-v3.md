@@ -825,11 +825,32 @@ MUST:
 
 ---
 
-## 20. Economic use threshold
+## 20. When to use AION
 
-AION is not universally token-efficient. The skill must be loaded by both producer and
-consumer (~7,500 tokens combined overhead per session). This overhead is recovered only
-when the documents being exchanged are long enough to benefit from compression.
+AION serves two distinct use cases with different cost/benefit profiles.
+
+### 20.1 Data exchange between parties
+
+When two parties exchange a document and both use an AI to read it, AION is
+advantageous regardless of document length. The value is not compression — it is:
+
+- **Non-ambiguity**: every construct has exactly one interpretation. Natural language
+  leaves dates, obligations, and conditions open to divergent reading by different models.
+- **Interoperability**: two AI systems from different vendors with different training
+  interpret the same AION file identically, because the skill is the contract.
+- **Auditability**: an AION file is verifiable. `ep=`, `cf=`, `>>` dependencies,
+  and `valid=` ranges are checkable in ways that prose is not.
+
+For data exchange, use AION even on short documents. The non-ambiguity value
+is independent of token savings.
+
+### 20.2 Internal digest for query sessions
+
+When a single AI uses AION as a compressed digest of a document for internal
+query purposes, token efficiency determines suitability. Both producer and
+consumer load the skill (~7,500 tokens combined overhead per session).
+This overhead is recovered only when documents are long enough to benefit
+from compression.
 
 | Document length | Compression ratio | Recommendation |
 |----------------|-------------------|----------------|
@@ -838,12 +859,28 @@ when the documents being exchanged are long enough to benefit from compression.
 | 10-30 pages / 2,000-8,000 tokens | 5x-10x | use |
 | > 30 pages / > 8,000 tokens | 10x-15x | strongly recommended |
 
-For short documents (invoices, brief emails, short minutes), pass the original text directly.
-The structural overhead of entity declarations, section markers, and property syntax
-exceeds the natural language savings for documents under ~500 tokens.
+For short documents (invoices, brief emails, short minutes), pass the original
+text directly. The structural overhead of entity declarations, section markers,
+and property syntax exceeds the natural language savings for documents under
+~500 tokens.
 
-The overhead amortizes quickly across a session: loading the skill once and processing
-5 long documents in a session yields ~5x net token savings per document.
+The overhead amortizes quickly across a session: loading the skill once and
+processing 5 long documents yields ~5x net token savings per document.
+
+### 20.3 Content composition threshold
+
+Length alone does not determine AION suitability. Consider content composition:
+
+| Content type | RAW/CMP ratio | Recommendation |
+|---|---|---|
+| Structured data, conditions, actions | <20% | AION strongly recommended |
+| Mixed structured + prose | 20-60% | AION recommended if >10 pages |
+| Dense prose, definitions, procedures | >60% | evaluate against use case |
+
+High RAW/CMP ratio means structural overhead is not recovered in compression.
+For data exchange (20.1), AION retains full value even at high RAW/CMP ratios
+because non-ambiguity is the primary goal. For internal digest use (20.2),
+consider passing the original text directly when RAW/CMP ratio exceeds 60%.
 
 -e 
 ## 21. Versioning policy
