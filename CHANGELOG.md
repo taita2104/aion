@@ -15,8 +15,9 @@ File headers remain `v=3`. No breaking changes.
 - PRODUCER MUST rule 4 strengthened: explicit prohibition on natural language inside `<<<` blocks without `RAW` opener
 - Added wrong/right examples inline in rule 4 to prevent producer non-conformance on dense technical content
 - `CMP` sub-block added: compressed prose alternative to `RAW`, ~60-70% token reduction
+- CMP rules 7-9 added: `E[id]` mandatory for entity references, `|` mandatory for lists, inline quantities mandatory
 - PRODUCER MUST rules 15-16 added: guidance on choosing TMPL / AION / CMP / RAW by content structure
-- CONSUMER MUST rule 13 added: CMP interpretation rules
+- CONSUMER MUST rule 13 added: CMP interpretation rules including entity and quantity inverse mapping
 
 ---
 

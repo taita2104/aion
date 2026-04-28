@@ -112,10 +112,11 @@ Opener: `CMP` inside `<<<` block. Rules:
 
 1. Drop articles, prepositions, auxiliary verbs, redundant punctuation
 2. Multi-word concepts → hyphenated-token
-3. Lists → item|item|item
+3. Lists → item|item|item — never commas
 4. Sequences → step1 → step2 → step3
 5. Key-value → key:value
-6. Quantities inline: 50pct 3h 2km
+6. Quantities inline: 50pct 3h 2km — never prose (not "50 percento", not "tre ore")
+7. Entity references: E[id] mandatory — never prose name
 
 WRONG — prose in RAW when CMP applies:
 <<<
@@ -266,7 +267,8 @@ research plan form audit press whitepaper sdk rfp financial doc
 12. Accept inline quantities anywhere `Q[id]` is valid
 13. CMP block: interpret compressed tokens as meaning-preserving prose reduction.
     Apply rules inverse to production: hyphenated-token → multi-word concept,
-    item|item → list, step → step sequence, key:value → key-value pair.
+    item|item → list, step → step sequence, key:value → key-value pair,
+    E[id] → entity name, inline quantities → natural language quantities.
 
 ## EXAMPLE
 

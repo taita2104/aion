@@ -655,14 +655,18 @@ Use instead of RAW whenever the text does not need to be reproduced verbatim.
 Compression rules:
 1. Drop articles, prepositions, auxiliary verbs, redundant punctuation
 2. Multi-word concepts → hyphenated-token
-3. Lists → `item|item|item`
+3. Lists → `item|item|item` — never commas
 4. Sequences → `step1 → step2 → step3`
 5. Key-value → `key:value`
-6. Quantities inline: `50pct` `3h` `2km`
+6. Quantities inline: `50pct` `3h` `2km` — never prose ("50 percento", "tre ore")
+7. Entity references: `E[id]` mandatory — never prose name
 
 Consumer interpretation: apply inverse rules to reconstruct meaning.
 CMP is not a lossless encoding — minor stylistic detail may be dropped.
 Semantic content must be fully preserved.
+Inverse rules: hyphenated-token → multi-word concept, item|item → list,
+step → step sequence, key:value → key-value pair,
+E[id] → entity name, inline quantities → natural language quantities.
 
 ```
 F[f1] t=desc
