@@ -1,16 +1,11 @@
 ---
 name: aion
 description: >
-  AION (AI Interop Object Notation) is a shared communication protocol for AI-to-AI pipelines.
-  Load this skill into the system prompt of every AI agent in a pipeline where one AI produces
-  structured output that another AI consumes - without any human reading it in between.
-  Use AION whenever you are acting as a producer (generating structured output for a downstream AI)
-  or as a consumer (receiving and interpreting AION-formatted input from an upstream AI).
-  Also use when a human asks you to generate a .aion file as a semantic digest of a document
-  they intend to share with another party whose AI will read it.
-  Triggers: "AI pipeline", "agent to agent", "AI workflow", "produce output for another AI",
-  "consume AI output", "no human in the loop", "AION format", "interop between agents",
-  "generate aion", "create aion file", "aion digest", ".aion".
+  Token-efficient protocol for AI-to-AI document exchange. Load into the system prompt of every
+  agent that produces or consumes AION output. Both producer and consumer load this skill —
+  the skill is the contract. Also use when generating a .aion semantic digest of a document.
+  Triggers: AI pipeline · agent to agent · AION format · .aion · generate aion · aion digest ·
+  no human in the loop · interop between agents · produce output for another AI
 ---
 
 # AION v3.3
@@ -118,30 +113,6 @@ Opener: `CMP` inside `<<<` block. Rules:
 6. Quantities inline: 50pct 3h 2km - never prose (not "50 percento", not "tre ore")
 7. Entity references: E[id] mandatory - never prose name
 
-WRONG - prose in RAW when CMP applies:
-<<<
-RAW
-The system must verify the identity of the user before granting access to the resource.
->>>
-
-RIGHT:
-<<<
-CMP
-system ! verify user-identity → grant-access
->>>
-
-WRONG:
-<<<
-RAW
-Phase one: collect data. Phase two: validate. Phase three: store results.
->>>
-
-RIGHT:
-<<<
-CMP
-phase-1:collect-data → phase-2:validate → phase-3:store-results
->>>
-
 ## TMPL
 
 ```
@@ -211,27 +182,7 @@ research plan form audit press whitepaper sdk rfp financial doc
 1. Header `AION v=3`
 2. Globally unique `[id]` on every referenced record
 3. Omit `s=0` and `p=2`
-4. No natural language outside RAW blocks. <<< blocks contain AION only.
-   Free text inside <<< without RAW opener = non-conforming output.
-
-   WRONG:
-   F[f1] t=def n=consegna
-   <<<
-   La consegna avviene quando il fornitore trasferisce il prodotto al cliente.
-   >>>
-
-   RIGHT - free text requires RAW:
-   F[f1] t=def n=consegna
-   <<<
-   RAW
-   La consegna avviene quando il fornitore trasferisce il prodotto al cliente.
-   >>>
-
-   RIGHT - pure AION inside <<<, no RAW needed:
-   C[c1] E[b]>E[mvp] @<20261001 !
-   <<<
-   E[a]~ack @<+15dw | (timeout => E[mvp].s=4)
-   >>>
+4. No natural language outside RAW blocks. Free text inside `<<<` requires `RAW` opener.
 5. Emit `X` for anomalies before sending
 6. Declare custom subtypes in SCHEMA before first use
 7. `cf=` on probabilistic/inferred records
@@ -242,14 +193,7 @@ research plan form audit press whitepaper sdk rfp financial doc
 12. `ep=` on F records where epistemic status is meaningful
 13. `valid=` on C records with bounded temporal applicability
 14. `>>F[def-id]` on records that use a term defined elsewhere
-15. Choose block content by structure:
-    - Tabular/repeated structure → TMPL
-    - Operators, dependencies, conditions → AION pure inside <<<
-    - Compressible prose → CMP
-    - Verbatim text (legal clauses, quotations, citations) → RAW
-    RAW is last resort. Default to TMPL, AION, or CMP.
-16. Prefer CMP over RAW for compressible prose. Use RAW only for verbatim text
-    that must be reproduced exactly.
+15. Block type by content: tabular → TMPL · AION operators → pure `<<<` · compressible prose → CMP · verbatim only → RAW (last resort)
 
 ## CONSUMER MUST
 
@@ -293,11 +237,3 @@ K[k2] by=b t=sign @<20260501 !
 K[k3] by=a E[a]>20000EUR E[b] @<20260515 ! >>K[k1]
 ```
 
-`ep=` usage across document types:
-```
-F[f1] t=find  ep=evid  cf=0.96   # empirical evidence
-F[f2] t=find  ep=corr  cf=0.81   # correlation, not causation
-F[f3] t=concl ep=estab cf=1.0    # established/settled
-F[f4] t=claim ep=disput src=E[x] # contested by party x
-F[f5] t=find  ep=refut >>F[f2]   # refutes f2
-```

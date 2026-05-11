@@ -31,8 +31,8 @@ New `.aion` files in `examples/` are always welcome. They must:
 ## What AION does not accept
 
 - New primitive type codes (E F Q K C S L X are fixed)
-- New operators (the operator set is closed in v2)
-- Natural language in record bodies outside `RAW:` blocks
+- New operators (the operator set is closed in v3)
+- Natural language in record bodies outside `RAW` blocks
 - Domain-specific forks -- use `SCHEMA` instead
 
 The primitive and operator sets are intentionally closed. Stability across AI systems
@@ -45,7 +45,7 @@ breaks that guarantee.
 
 1. Open an issue before writing any code or spec changes
 2. Discuss the proposal -- the bar is: does this make AION more universal, not more specific?
-3. If approved, open a PR against `main` with changes to `spec/AION-v2.md` and `SKILL.md`
+3. If approved, open a PR against `main` with changes to `spec/AION-v3.md` and `SKILL.md`
 4. PRs must include at least one new or updated example in `examples/`
 5. Breaking changes require a version bump and a migration note in `CHANGELOG.md`
 
@@ -56,7 +56,7 @@ breaks that guarantee.
 - No natural language in AION examples (enforce what the spec preaches)
 - All AION snippets must be syntactically valid
 - Properties listed in examples must appear in the spec
-- Use `YYMMDD` dates, never ISO 8601 or written dates
+- Use `YYYYMMDD` dates, never ISO 8601 or written dates
 - Quantities always have units
 
 ---

@@ -23,17 +23,16 @@ F[f-scope] t=desc E[acme]<>E[beta] +[E[mvp],Q[dur],Q[total]]
 S[obligations] t=next-steps
 C[c1] E[beta]>E[mvp] @<20261001 ! +[E[doc-t],E[test],E[manual]]
 <<<
-E[acme]<E[mvp]: ~ack @<+15dw
-C[c1a]: timeout => E[mvp].s=4
+E[acme]~ack @<+15dw | (timeout => E[mvp].s=4)
 >>>
-C[c2] E[acme]>Q[rate] E[beta] @<*mo.01 @>2026601 !
-C[c3] law=it-civil forum=trib-mi
+C[c2] E[acme]>Q[rate] E[beta] @<*mo.01 @>20260601 !
+C[c3] jur=it-civil ven=trib-mi
 
 S[risk] t=risk
-C[r1] C[c1] trigger=delay => Q[penalty-del] E[beta]>E[acme]
-C[r2] C[c2] trigger=delay => Q[penalty-pay] E[acme]>E[beta]
+C[r1] cnd=delay >>C[c1] => Q[penalty-del] E[beta]>E[acme]
+C[r2] cnd=delay >>C[c2] => Q[penalty-pay] E[acme]>E[beta]
 
 S[actions] t=next-steps
-K[k1] by=acme t=sign @<20260501 ! s=0
-K[k2] by=beta t=sign @<20260501 ! s=0
-K[k3] by=acme E[acme]>Q[deposit] E[beta] @<20260515 ! s=0 >>K[k1]
+K[k1] by=acme t=sign @<20260501 !
+K[k2] by=beta t=sign @<20260501 !
+K[k3] by=acme E[acme]>Q[deposit] E[beta] @<20260515 ! >>K[k1]
