@@ -8,11 +8,11 @@ description: >
   no human in the loop · interop between agents · produce output for another AI
 ---
 
-# AION v3.3
+# AION v3.3.1
 
 Token-efficient artificial language for AI-to-AI document exchange. No natural language.
 Both producer and consumer load this skill. The skill is the contract.
-File headers declare `v=3`. v3.3 is fully backward compatible with v3, v3.1, v3.2.
+File headers declare `v=3`. v3.3.1 is fully backward compatible with v3, v3.1, v3.2, v3.3.
 
 ## RECORD
 
@@ -48,6 +48,7 @@ temporal:    @  at    @<  by    @>  from    @+Nd  days    @+Ndw  workdays    @+N
 modal:       !  must    ~  may    /  must-not    ?  uncertain
 combinators: &  and    |  or    ||  parallel    (max one nesting level)
              & | only in C records and <<< blocks. || only in -> chains.
+consequence: TYPE[id].prop=val  set property on referenced record (C records after => only)
 ```
 
 `>>` logical dependency. `->` strict sequence. Not interchangeable.
@@ -56,6 +57,7 @@ combinators: &  and    |  or    ||  parallel    (max one nesting level)
 ## DATES
 
 `YYYYMMDD  HHMM  YYYYMMDD.HHMM  +Nd  +Ndw  +Nmo` - relative to header `dt=`.
+If `dt=` absent and relative dates present: consumer emits `X field=dt reason=missing`, dates unresolvable.
 
 ## QUANTITIES
 
@@ -80,6 +82,11 @@ wt= weight 0-100     vs= compare-to    d=  delta
 ep= epistemic-status (F records): assert·claim·evid·corr·demo·estab·disput·refut
 valid= temporal validity: YYYYMMDD:YYYYMMDD · YYYYMMDD: · :YYYYMMDD
 ```
+
+`ep=` vs `t=` disambiguation: `corr`, `evid`, `refut` appear in both vocabularies.
+`t=` classifies the record type. `ep=` encodes epistemic stance of a differently-typed record.
+When `t=corr|evid|refut`, the matching `ep=` is implied and MUST be omitted.
+`ep=corr|evid|refut` is only valid when `t=` is a different value (e.g. `t=find ep=refut`).
 
 Header extras: `cov=0-1` digest coverage fraction · `excl=[id,id]` intentionally excluded sections.
 Extended standard: `jur= ven= pen= cnd= mth= fmt= via= ref= dur= qty=`
@@ -194,6 +201,7 @@ research plan form audit press whitepaper sdk rfp financial doc
 13. `valid=` on C records with bounded temporal applicability
 14. `>>F[def-id]` on records that use a term defined elsewhere
 15. Block type by content: tabular → TMPL · AION operators → pure `<<<` · compressible prose → CMP · verbatim only → RAW (last resort)
+16. Include `dt=` in header whenever file contains relative date expressions (`+Nd` `+Ndw` `+Nmo`)
 
 ## CONSUMER MUST
 
@@ -213,6 +221,7 @@ research plan form audit press whitepaper sdk rfp financial doc
     Apply rules inverse to production: hyphenated-token → multi-word concept,
     item|item → list, step → step sequence, key:value → key-value pair,
     E[id] → entity name, inline quantities → natural language quantities.
+14. If relative dates present but `dt=` absent: emit `X field=dt reason=missing`, treat dates as unresolvable.
 
 ## EXAMPLE
 

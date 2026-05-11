@@ -162,6 +162,24 @@ Applies to `F` records. Encodes the epistemic standing of the assertion.
 | `evid` | empirical evidence supporting a claim |
 | `refut` | refutation of another record |
 
+#### Disambiguation: `t=` vs `ep=` for overlapping values
+
+`corr`, `evid`, and `refut` appear in both the `F.t=` subtype list and the `ep=` vocabulary.
+They serve distinct roles and the choice is not ambiguous:
+
+- `t=` classifies **what kind of record this is**
+- `ep=` encodes **the epistemic stance of a record whose type is something else**
+
+**Rule**: when `t=corr`, `t=evid`, or `t=refut` is present, the corresponding `ep=` value is
+implied and **MUST be omitted**. Use `ep=corr`, `ep=evid`, or `ep=refut` only on records
+whose `t=` is a different value.
+
+```
+F[f1] t=refut >>F[target]           # correct: t= implies epistemic stance, ep= omitted
+F[f2] t=refut ep=refut >>F[target]  # wrong: redundant, ep= MUST be omitted
+F[f3] t=find ep=refut >>F[baseline] # correct: finding whose epistemic stance is refutation
+```
+
 ### 3.3.3 Temporal validity property `valid=`
 
 ```
@@ -443,6 +461,21 @@ Reasons: `missing unknown-type undeclared-subtype invalid-value parse-fail unsup
 | `&` | C records, blocks | AND |
 | `\|` | C records, blocks | OR |
 
+### 8.5 Property assignment expression
+
+```
+TYPE[id].prop=val
+```
+
+Sets property `prop` of the referenced record to `val`.
+Valid only as a consequence expression in `C` records (after `=>`).
+The referenced record MUST be declared in the file.
+
+```
+C[c1a]: timeout => E[mvp].s=4   # set status of E[mvp] to approved
+C[c2a]: breach => K[k1].s=7     # set status of K[k1] to blocked
+```
+
 ---
 
 ## 9. Negation
@@ -465,6 +498,10 @@ Consumers MUST accept both forms.
 | `+Nd` | N calendar days from document date |
 | `+Ndw` | N working days |
 | `+Nmo` | N months |
+
+Relative expressions (`+Nd`, `+Ndw`, `+Nmo`) are resolved against the header `dt=` value.
+If `dt=` is absent and relative dates are present, the consumer MUST emit
+`X field=dt reason=missing` and treat all relative dates in the file as unresolvable.
 
 ---
 
@@ -643,6 +680,8 @@ MUST:
    RAW is last resort. Default to TMPL, AION, or CMP.
 10. Prefer CMP over RAW for compressible prose. Use RAW only for verbatim text
     that must be reproduced exactly.
+11. Include `dt=` in the header whenever the file contains relative date expressions
+    (`+Nd`, `+Ndw`, `+Nmo`).
 
 SHOULD:
 1. Place `E` declarations before content
@@ -674,6 +713,8 @@ MUST:
     Apply rules inverse to production: hyphenated-token → multi-word concept,
     item|item → list, step → step sequence, key:value → key-value pair,
     E[id] → entity name, inline quantities → natural language quantities.
+14. If relative date expressions are present but `dt=` is absent from the header:
+    emit `X field=dt reason=missing` and treat all relative dates as unresolvable.
 
 ---
 
