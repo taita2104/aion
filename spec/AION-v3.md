@@ -283,6 +283,16 @@ New section documents how to encode documents using AION without full semantic
 classification. Suitable for generic documents where forcing subtype labels would
 be artificial.
 
+### SKILL.md simplified (~30% token reduction)
+
+Redundant content removed from SKILL.md. No normative changes to the spec.
+- 5 micro-sections folded inline (SEQUENCE·PARALLEL, NEGATION, MULTI-DEPENDENCY,
+  SECTION syntax, LINK syntax)
+- CONSUMER MUST: 14 → 8 rules (removed duplicates of dedicated sections)
+- PRODUCER MUST: 16 → 15 rules
+- ep= disambiguation: 4 lines → 1
+- EXAMPLE replaced with generic report
+
 ---
 
 ## 4. File structure

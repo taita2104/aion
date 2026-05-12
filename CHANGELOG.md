@@ -19,7 +19,16 @@ File headers remain `v=3`. No breaking changes.
   to the generic fallback subtype
 - §20.4 added: Minimal encoding — guidance and example for documents where forcing
   subtype classification would be artificial
-- SKILL.md updated to v3.3.3 with new subtypes and `t=` optionality note
+- SKILL.md simplified: ~30% token reduction
+  - Removed 5 standalone micro-sections (SEQUENCE·PARALLEL, NEGATION, MULTI-DEPENDENCY,
+    SECTION, LINK) — content folded inline into OPERATORS and PRIMITIVES
+  - CONSUMER MUST reduced from 14 to 8 rules: removed rules fully covered by
+    dedicated sections (BLOCKS, NEGATION, TMPL, QUANTITIES, CMP, DATES)
+  - PRODUCER MUST reduced from 16 to 15 rules: removed `->` vs `>>` rule (duplicate
+    of OPERATORS disambiguation note)
+  - ep= disambiguation compressed from 4 lines to 1
+  - TMPL consumer note removed (duplicate of CONSUMER MUST rule 4)
+  - EXAMPLE replaced: contract (legal-specific, 20 lines) → generic report (13 lines)
 
 ---
 
