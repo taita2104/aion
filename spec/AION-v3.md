@@ -1,10 +1,10 @@
-# AION v3 - Formal Specification (rev. 3.3.1)
+# AION v3 - Formal Specification (rev. 3.3.2)
 
 This document is the authoritative reference for AION v3.
 `SKILL.md` in the repository root is the deployable subset optimized for AI system prompts.
 When the two conflict, this document takes precedence.
 
-> **Revision 3.3.1** is fully backward compatible with v3, v3.1, v3.2, v3.3. File headers continue to declare `v=3`.
+> **Revision 3.3.2** is fully backward compatible with v3, v3.1, v3.2, v3.3, v3.3.1. File headers continue to declare `v=3`.
 
 ---
 
@@ -235,6 +235,30 @@ The Vision: future of professional document exchange without natural language ce
 
 ---
 
+## 3.3.2 Changes in revision 3.3.2 (additive only)
+
+File headers remain `v=3`. All v3, v3.1, v3.2, v3.3, v3.3.1 syntax remains valid.
+
+### New document classes
+
+Added to `type=` vocabulary: `article presentation memo ticket announcement`
+
+### `doc` class guidance
+
+Normative note added to §5: when no specific class fits, `doc` is the correct choice.
+Producers SHOULD use SCHEMA to declare domain-specific subtypes when using `doc`.
+
+### Generalized RAW block description
+
+PRODUCER MUST rule 9 now lists `doc` usage guidance and generalizes the RAW block
+description beyond legal contexts.
+
+### Vision expanded
+
+§22 "What this enables" now includes non-legal document examples.
+
+---
+
 ## 4. File structure
 
 ```
@@ -312,7 +336,16 @@ All other records in any order.
 | `sdk` | SDK or developer documentation |
 | `rfp` | Request for proposal |
 | `financial` | Financial document |
+| `article` | Article, essay, or editorial |
+| `presentation` | Slide deck or presentation |
+| `memo` | Internal memo or note |
+| `ticket` | Issue, bug report, or support ticket |
+| `announcement` | Announcement or notification |
 | `doc` | Generic / unclassified |
+
+When no specific class fits, use `doc`. Producers SHOULD declare domain-specific
+subtypes via `SCHEMA` to preserve semantic structure (e.g. `F.t = symptom diagnosis treatment`
+for medical records, `F.t = finding risk recommendation` for audit-adjacent docs).
 
 ---
 
@@ -676,7 +709,8 @@ MUST:
    - Tabular/repeated structure → TMPL
    - Operators, dependencies, conditions → AION pure inside `<<<`
    - Compressible prose → CMP
-   - Verbatim text (legal clauses, quotations, citations) → RAW
+   - Verbatim text that must be reproduced exactly (legal clauses, quotations,
+     citations, source excerpts, regulatory text) → RAW
    RAW is last resort. Default to TMPL, AION, or CMP.
 10. Prefer CMP over RAW for compressible prose. Use RAW only for verbatim text
     that must be reproduced exactly.
@@ -833,6 +867,21 @@ documents that engineers read in diagonal.
 
 **Meeting minutes** - generated during the meeting, not after. Actions are `K[id] by=
 @< !`. Decisions are `F[id] t=concl ep=estab`. Shared as `.aion` immediately.
+
+**Research and reports** - findings as `F[id] t=find ep=evid cf=`, conclusions as
+`F[id] t=concl >>F[evidence-ids]`. Dependencies between claims are explicit and
+traversable. An AI consumer can distinguish established facts from contested claims
+without reading prose framing.
+
+**Operational documents** - tickets, memos, announcements. A bug report as
+`F[id] t=find` with `K[id] t=assign by=` and `@< !` deadlines. An internal memo
+as structured facts and actions without ceremony. The substance is preserved;
+the format overhead disappears.
+
+**Any document where two AI systems need to agree** - when both the producer and
+consumer load the same `SKILL.md`, any document type gains the same non-ambiguity
+and interoperability guarantees, regardless of domain. The grammar is universal;
+the `type=` header is a hint, not a constraint on what can be expressed.
 
 ### The missing piece
 

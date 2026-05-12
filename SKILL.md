@@ -181,8 +181,10 @@ Reasons: `missing unknown-type undeclared-subtype invalid-value parse-fail unsup
 
 ```
 contract report spec email minutes proposal policy invoice brief manual
-research plan form audit press whitepaper sdk rfp financial doc
+research plan form audit press whitepaper sdk rfp financial
+article presentation memo ticket announcement doc
 ```
+`doc` = generic fallback; use SCHEMA to extend subtypes for domain-specific docs.
 
 ## PRODUCER MUST
 

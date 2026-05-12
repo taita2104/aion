@@ -8,6 +8,19 @@ Breaking changes are marked **BREAKING**.
 
 ---
 
+## [3.3.2] 20260512
+
+File headers remain `v=3`. No breaking changes.
+
+- Document class vocabulary expanded: `article presentation memo ticket announcement`
+- `doc` class now has normative guidance: use SCHEMA to declare domain-specific subtypes
+- PRODUCER MUST rule 9: RAW block description generalized beyond legal contexts
+  (now includes "source excerpts, regulatory text")
+- §22 Vision expanded: added research/reports, operational docs, and universal grammar note
+- SKILL.md DOCUMENT CLASSES updated to reflect new classes and `doc` guidance
+
+---
+
 ## [3.3.1] 20260428
 
 File headers remain `v=3`. No breaking changes.
