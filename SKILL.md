@@ -8,11 +8,11 @@ description: >
   no human in the loop · interop between agents · produce output for another AI
 ---
 
-# AION v3.3.1
+# AION v3.3.3
 
 Token-efficient artificial language for AI-to-AI document exchange. No natural language.
 Both producer and consumer load this skill. The skill is the contract.
-File headers declare `v=3`. v3.3.1 is fully backward compatible with v3, v3.1, v3.2, v3.3.
+File headers declare `v=3`. v3.3.3 is fully backward compatible with all prior v3 revisions.
 
 ## RECORD
 
@@ -32,10 +32,13 @@ E entity · F fact · Q quantity · K action · C condition · S section · L li
 Custom types: 2-letter uppercase codes declared in SCHEMA.
 
 E.t= `person org system place product file concept role event`
-F.t= `find concl desc req claim def warn note quote corr evid refut`
-K.t= `sign approve review test deploy notify recommend`
-S.t= `introduction background scope methodology results analysis conclusion recommendation appendix next-steps risk financial`
+F.t= `find concl desc req claim def warn note quote corr evid refut item`
+K.t= `sign approve review test deploy notify recommend act`
+S.t= `introduction background scope methodology results analysis conclusion recommendation appendix next-steps risk financial section`
 L.t= `cite ref attach replaces supersedes see-also`
+
+`t=` is optional on F, K, S. Omitting it is equivalent to `t=item` / `t=act` / `t=section`.
+Use specific subtypes when the classification adds semantic value a consumer can act on.
 
 ## OPERATORS
 

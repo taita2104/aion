@@ -1,10 +1,10 @@
-# AION v3 - Formal Specification (rev. 3.3.2)
+# AION v3 - Formal Specification (rev. 3.3.3)
 
 This document is the authoritative reference for AION v3.
 `SKILL.md` in the repository root is the deployable subset optimized for AI system prompts.
 When the two conflict, this document takes precedence.
 
-> **Revision 3.3.2** is fully backward compatible with v3, v3.1, v3.2, v3.3, v3.3.1. File headers continue to declare `v=3`.
+> **Revision 3.3.3** is fully backward compatible with v3, v3.1, v3.2, v3.3, v3.3.1, v3.3.2. File headers continue to declare `v=3`.
 
 ---
 
@@ -259,6 +259,32 @@ description beyond legal contexts.
 
 ---
 
+## 3.3.3 Changes in revision 3.3.3 (additive only)
+
+File headers remain `v=3`. All previous syntax remains valid.
+
+### Generic fallback subtypes
+
+Three new subtypes added as explicit unclassified fallbacks:
+
+- `F.t=item` — generic fact; use when no specific subtype fits
+- `K.t=act` — generic action; use when no specific action type fits
+- `S.t=section` — generic section; use when no structural label applies
+
+### `t=` declared optional
+
+`t=` is now explicitly documented as optional on all record types.
+Omitting `t=` is equivalent to the generic fallback (`item` / `act` / `section`).
+This removes implicit pressure to classify records that do not have a natural subtype.
+
+### §20.4 Minimal encoding
+
+New section documents how to encode documents using AION without full semantic
+classification. Suitable for generic documents where forcing subtype labels would
+be artificial.
+
+---
+
 ## 4. File structure
 
 ```
@@ -371,7 +397,10 @@ Subtypes (`t=`): `person org system place product file concept role event`
 
 ### 7.2 F - Fact
 
-Subtypes (`t=`): `find concl desc req claim def warn note quote corr evid refut`
+Subtypes (`t=`): `find concl desc req claim def warn note quote corr evid refut item`
+
+`t=item` is the generic fallback for facts that do not fit any specific subtype.
+`t=` is optional; omitting it is equivalent to `t=item`.
 
 ### 7.3 Q - Quantity
 
@@ -396,8 +425,11 @@ Frequency modifiers: `*d *mo *yr *u`
 
 ### 7.4 K - Action
 
-Subtypes (`t=`): `sign approve review test deploy notify recommend`
+Subtypes (`t=`): `sign approve review test deploy notify recommend act`
 Modal operators apply: `!` `~` `/`
+
+`t=act` is the generic fallback for actions that do not fit any specific subtype.
+`t=` is optional; omitting it is equivalent to `t=act`.
 
 ### 7.5 C - Condition
 
@@ -424,8 +456,11 @@ Mixing both modes in the same file is forbidden.
 Subtypes:
 ```
 introduction background scope methodology results analysis
-conclusion recommendation appendix next-steps risk financial
+conclusion recommendation appendix next-steps risk financial section
 ```
+
+`t=section` is the generic fallback for sections that do not map to a named structural label.
+`t=` is optional; omitting it is equivalent to `t=section`.
 
 ### 7.7 L - Link
 
@@ -808,6 +843,62 @@ High RAW/CMP ratio means structural overhead is not recovered in compression.
 For data exchange (20.1), AION retains full value even at high RAW/CMP ratios
 because non-ambiguity is the primary goal. For internal digest use (20.2),
 consider passing the original text directly when RAW/CMP ratio exceeds 60%.
+
+### 20.4 Minimal encoding
+
+When full semantic classification is unnecessary or artificial — generic articles,
+memos, notes, knowledge-base entries — producers MAY omit `t=` and avoid domain-specific
+properties entirely. The grammar remains valid; the consumer receives unclassified but
+unambiguous records.
+
+Minimal encoding is appropriate when:
+- The document type does not have a natural mapping to AION subtypes
+- The goal is compression and non-ambiguity, not machine-verifiable semantics
+- The producer lacks domain context to classify accurately
+
+**Example — generic article, minimal classification:**
+
+```
+AION v=3 dt=20260512 type=article lang=en cf=0.9
+
+E[author] t=person n=J.Smith
+E[org] t=org n=Acme
+
+S[s1]
+F[f1] n=scope
+<<<
+CMP
+article covers distributed-systems design-principles for E[org] engineering-teams
+>>>
+
+F[f2] n=principle-1
+<<<
+CMP
+avoid-shared-state · prefer-message-passing · design-for-failure
+>>>
+
+F[f3] n=principle-2
+<<<
+CMP
+observability-first: metrics|logs|traces mandatory from day-one
+>>>
+
+F[f4] n=summary
+<<<
+CMP
+3-principles define E[org] distributed-systems guidelines · see F[f2] F[f3]
+>>>
+
+K[k1] by=author n=publish @<20260601 ~
+```
+
+No `t=` on `F` or `S` records. No `ep=`, no `jur=`, no `pen=`. The content is
+fully encoded, unambiguous, and compressed. A consumer that loads SKILL.md can
+answer questions, extract entities, summarize sections, and follow dependencies
+without any domain-specific classification.
+
+Producers SHOULD add `t=` when the subtype adds semantic value a consumer can act on.
+Producers MAY omit `t=` when classification would be forced or misleading.
 
 ---
 

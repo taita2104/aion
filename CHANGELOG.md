@@ -8,6 +8,21 @@ Breaking changes are marked **BREAKING**.
 
 ---
 
+## [3.3.3] 20260512
+
+File headers remain `v=3`. No breaking changes.
+
+- `F.t=item` added: generic fact fallback for unclassifiable records
+- `K.t=act` added: generic action fallback
+- `S.t=section` added: generic section fallback
+- `t=` declared explicitly optional on F, K, S records; omitting it is equivalent
+  to the generic fallback subtype
+- §20.4 added: Minimal encoding — guidance and example for documents where forcing
+  subtype classification would be artificial
+- SKILL.md updated to v3.3.3 with new subtypes and `t=` optionality note
+
+---
+
 ## [3.3.2] 20260512
 
 File headers remain `v=3`. No breaking changes.
